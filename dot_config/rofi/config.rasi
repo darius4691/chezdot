@@ -1,0 +1,6 @@
+configuration {
+modi: "drun,run,ssh,combi";
+combi-modi: "drun,ssh";
+show-icons: true;
+terminal: "kitty";
+}
