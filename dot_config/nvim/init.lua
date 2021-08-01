@@ -1,4 +1,11 @@
 -- vim:foldmethod=marker
+-- Neovide{{{
+vim.cmd[[
+    set guifont=FiraCode\ Nerd\ Font\ Mono
+    let g:neovide_transparency=0.8
+    let g:neovide_cursor_vfx_mode = "railgun"
+]]
+-- }}}
 
 -- Defaults {{{
 vim.cmd("syntax enable") -- syntax highlight
@@ -141,7 +148,6 @@ require('packer').startup(function()
     use {'folke/tokyonight.nvim',
         config = function()
             vim.cmd[[colorscheme tokyonight]]
-            vim.cmd[[highlight Normal guibg=none]]
         end
     }
 
