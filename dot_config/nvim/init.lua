@@ -135,11 +135,11 @@ require('packer').startup(function()
         end
     }
 
-    --use {'rcarriga/nvim-dap-ui', requires = {'mfussenegger/nvim-dap'},
-    --    config = function()
-    --        require "dapconf"
-    --    end
-    --}
+    use { 'rcarriga/nvim-dap-ui', requires = {'mfussenegger/nvim-dap'},
+        config = function()
+            require "debugger"
+        end
+    }
     -- LSP and debugger}}}
 
 
@@ -304,6 +304,7 @@ require('packer').startup(function()
             local ts = require("telescope.builtin")
             local bl = require("bufferline")
             wk.register({
+                a = {require("dapui").toggle, "toggledapui"},
                 b = {ts.buffers, "Buffers"},
                 c = {ts.commands, "Commands"},
                 d = {require'lspsaga.provider'.preview_definition, "Defination"},
@@ -315,6 +316,8 @@ require('packer').startup(function()
                 r = {ts.registers, "Registers"},
                 s = {require('lspsaga.rename').rename, "RenameVariable"},
                 t = {vim.lsp.buf.formatting, "Formatting"},
+                x = {require"dap".continue, "DebugRunContinue"},
+                z = {require"dap".toggle_breakpoint, "DebugBreakPoint"},
                 M = {"<Cmd>TodoTelescope<Cr>", "TODOs"},
                 D = {ts.lsp_definitions, "Defination"},
                 T = {ts.treesitter, "TreesitterObject"},
