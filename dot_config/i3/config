@@ -54,7 +54,8 @@ bindsym $mod+Shift+Print --release exec --no-startup-id i3-scrot -s
 #bindsym $mod+Shift+h exec xdg-open /usr/share/doc/manjaro/i3_help.pdf
 bindsym $mod+Ctrl+x --release exec --no-startup-id xkill
 bindsym $mod+space exec --no-startup-id albert toggle
-bindsym --release $mod+Ctrl+3 exec import ~/Pictures/screenshot.png
+bindsym --release $mod+Ctrl+3 exec flameshot gui
+bindsym --release $mod+Ctrl+4 exec flameshot gui
 
 #}}}
 

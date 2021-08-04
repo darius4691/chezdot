@@ -145,15 +145,15 @@ require('packer').startup(function()
 
     --- UI & theme {{{
 
-    use {'folke/tokyonight.nvim',
+    use {'navarasu/onedark.nvim',
         config = function()
-            vim.cmd[[colorscheme tokyonight]]
+            vim.cmd[[colorscheme onedark]]
         end
     }
 
 
     -- Automatically creates missing LSP diagnostics highlight groups for color schemes that don't yet support the Neovim 0.5 builtin lsp client.
-    use 'folke/lsp-colors.nvim'
+    --use 'folke/lsp-colors.nvim'
 
 
     --- lualine
@@ -161,7 +161,7 @@ require('packer').startup(function()
         requires = {'kyazdani42/nvim-web-devicons', opt = true},
         config = function() require('lualine').setup{
               options = {
-                theme = 'tokyonight',
+                theme = 'onedark',
                 section_separators = {'', ''},
                 component_separators = {'', ''},
                 icons_enabled = true,
