@@ -1,0 +1,39 @@
+{
+  "NeuralNetwork": {
+    "prefix": ["torch"],
+    "body": [
+      "import torch",
+      "import torch.nn as nn",
+      "import torch.nn.functional as F",
+      "import torch.optim as optim",
+      "from collections.abs import Sequence",
+      "class ${1:NeuralNetwork}(nn.Module):",
+      "    def __init__(self):",
+      "        super($1, self).__init__()",
+      "        #self.conv = nn.Conv2d(1, 6, 5)",
+      "        #self.pool = nn.MaxPool2d(kernal_size=)",
+      "        #self.fc = nn.Linear(in_features=, out_feautures=)",
+      "        $0",
+      "",
+      "    def forward(self, x):",
+      "        pass",
+      "",
+      "#training neural network",
+      "def train(",
+      "    nn: nn.Module,",
+      "    trainset: Sequence[tuple[torch.Tensor, torch.Tensor]],",
+      "    valset: Sequence[tuple[torch.Tensor, torch.Tensor]],",
+      "    epochs: int):",
+      "    criterion = nn.MSELoss()",
+      "    optimizer = optim.SGD(nn.parameters(), lr=0.1)",
+      "    optimizer.zero_grad()",
+      "    for epoch in range(epochs):",
+      "        for x, y_ref in trainset:",
+      "            optimizer.zero_grad()",
+      "            y = nn(x)",
+      "            loss = criterion(y, y_ref)",
+      "            loss.backwar()",
+      "            optimizer.step()"
+    ]
+  }
+}
