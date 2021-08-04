@@ -49,7 +49,6 @@ vim.cmd( "let $NVIM_TUI_ENABLE_TRUE_COLOR=1" )
 
 --: }}}
 
-
 -- Redefine tab completion {{{
 local t = function(str)
   return vim.api.nvim_replace_termcodes(str, true, true, true)
@@ -210,6 +209,17 @@ require('packer').startup(function()
     -- enable repeating supported plugin maps with .
     use 'tpope/vim-repeat'
     use 'jiangmiao/auto-pairs'
+    -- colorize hex color code for quick theme configuration
+    use { "norcalli/nvim-colorizer.lua" ,
+        config = function()
+            require"colorizer".setup{
+                "xdefaults";
+                "conf";
+                "dosini"
+            }
+        end
+        }
+    use { "jbyuki/nabla.nvim" }
 
     --- formatting
     use {'sbdchd/neoformat'}
@@ -291,9 +301,6 @@ require('packer').startup(function()
     -- telescope
     use {"nvim-telescope/telescope.nvim",
         requires = {"nvim-lua/popup.nvim", "nvim-lua/plenary.nvim"},
-        --config = function()
-        --    require'telescope'.load_extension'dap'
-        --end
     }
 
     -- keymaps
@@ -308,10 +315,11 @@ require('packer').startup(function()
                 b = {ts.buffers, "Buffers"},
                 c = {ts.commands, "Commands"},
                 d = {require'lspsaga.provider'.preview_definition, "Defination"},
-                f = {ts.file_browser, "FileBrowser"},
+                f = {function() ts.file_browser{hidden=true} end, "FileBrowser"},
                 h = {ts.help_tags, "HelpTag"},
                 k = {require('lspsaga.hover').render_hover_doc, "HoverDoc"},
-                o = {ts.find_files, "OpenFile"},
+                n = {require"nabla".action, "RenderLaTex"},
+                o = {function() ts.find_files{hidden=true} end, "OpenFile"},
                 p = {ts.lsp_document_diagnostics, "Diagnostics"},
                 r = {ts.registers, "Registers"},
                 s = {require('lspsaga.rename').rename, "RenameVariable"},
@@ -345,4 +353,3 @@ require('packer').startup(function()
 
 end)
 --}}}
-
