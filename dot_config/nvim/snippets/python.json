@@ -35,5 +35,20 @@
       "            loss.backwar()",
       "            optimizer.step()"
     ]
+  },
+  "sqlite": {
+      "prefix": ["sqlite"],
+      "body": [
+          "import sqlite3",
+          "class SQLiteDB(object):",
+          "    def __init__(self, dbpath=\"sqlite3.db\"):",
+          "        self.conn = sqlite3.connect(dbfile)",
+          "        self.cur = self.conn.cursor()",
+          "        #CreateTable self.cur.execute('CREATE TABLE table (id VARCHAR, value TEXT);')",
+          "        #AddItem self.cur.execute(f'INSERT INTO table VALUES(\\'{key}\\', \\'{value}\\');')",
+          "        #    self.conn.commit()",
+          "        #Fetch self.cur.execute(f'SELECT id, value FROM table WHERE id = \\'{key}\\';)",
+          "        #  result = self.cur.fetchone() or self.cur.fetchall()?"
+      ]
   }
 }

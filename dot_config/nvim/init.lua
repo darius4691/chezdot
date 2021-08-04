@@ -1,51 +1,49 @@
 -- vim:foldmethod=marker
 -- Neovide{{{
-vim.cmd[[
-    set guifont=FiraCode\ Nerd\ Font\ Mono
-    let g:neovide_transparency=0.8
-    let g:neovide_cursor_vfx_mode = "railgun"
-]]
+vim.api.nvim_set_var("neovide_transparency", 0.8)
+vim.api.nvim_set_var("neovide_cursor_vfx_mode", "railgun")
+vim.opt.guifont="FiraCode Nerd Font Mono"
 -- }}}
 
 -- Defaults {{{
 vim.cmd("syntax enable") -- syntax highlight
-vim.wo.number = true -- show line numbers
-vim.o.ruler = true
-vim.o.ttyfast = true                          -- terminal acceleration
-vim.cmd("set tabstop=4 ")                              -- 4 whitespaces for tabs visual presentation
-vim.cmd("set shiftwidth=4")                            -- shift lines by 4 spaces
-vim.o.smarttab = true                               -- set tabs for a shifttabs logic
-vim.cmd("set expandtab")                            -- expand tabs into spaces
-vim.o.autoindent = true                             -- indent when moving to the next line while writing code
-vim.o.cursorline = true                            -- shows line under the cursor's line
-vim.o.showmatch = true                             -- shows matching part of bracket pairs (), [], {}
-vim.o.enc="utf-8"                               -- utf-8 by default
-vim.o.backspace="indent,eol,start"              -- backspace removes all (indents, EOLs, start) What is start?
-vim.o.scrolloff=10                            -- let 10 lines before/after cursor during scroll
-vim.o.clipboard="unnamedplus"                       -- use system clipboard
-vim.o.hidden=true                                  -- TextEdit might fail if hidden is not set. 
-vim.o.backup=false                                -- Some servers have issues with backup files, see #649.
-vim.o.writebackup=false
-vim.o.cmdheight=2                             -- Give more space for displaying messages.
-vim.o.updatetime=300                          -- reduce updatetime (default is 4000 ms = 4 s) leads to noticeable
-vim.cmd('set iskeyword+=-') -- treat dash separated words as a word text object"
-vim.wo.signcolumn="yes"                        -- Always show the signcolumn, otherwise it would shift the text each time diagnostics appear/become resolved.
-vim.o.showmode=false                              -- compatible with lightline
-vim.o.showtabline=2                           -- show tab line always
-vim.o.list=true                                    -- show invisible characters
-vim.o.listchars="tab:>-,trail:~"                -- list symbols, extends,precedes are useless if warp is on
---vim.o.foldnestmax=1                           -- only fold top level
---vim.o.foldmethod=syntax                       --fold by syntax
+vim.opt.number = true -- show line numbers
+vim.opt.ruler = true
+vim.opt.ttyfast = true                          -- terminal acceleration
+vim.opt.tabstop = 4
+vim.opt.shiftwidth = 4
+vim.opt.smarttab = true                               -- set tabs for a shifttabs logic
+vim.opt.expandtab = true
+vim.opt.autoindent = true                             -- indent when moving to the next line while writing code
+vim.opt.cursorline = true                            -- shows line under the cursor's line
+vim.opt.showmatch = true                             -- shows matching part of bracket pairs (), [], {}
+vim.opt.enc = "utf-8"                               -- utf-8 by default
+vim.opt.backspace = "indent,eol,start"              -- backspace removes all (indents, EOLs, start) What is start?
+vim.opt.scrolloff = 10                            -- let 10 lines before/after cursor during scroll
+vim.opt.clipboard = "unnamedplus"                       -- use system clipboard
+vim.opt.hidden = true                                  -- TextEdit might fail if hidden is not set. 
+vim.opt.backup = false                                -- Some servers have issues with backup files, see #649.
+vim.opt.writebackup = false
+vim.opt.cmdheight = 2                             -- Give more space for displaying messages.
+vim.opt.updatetime = 300                          -- reduce updatetime (default is 4000 ms = 4 s) leads to noticeable
+vim.opt.iskeyword:append{"-"} -- treat dash separated words as a word text object"
+vim.opt.signcolumn = "yes"                        -- Always show the signcolumn, otherwise it would shift the text each time diagnostics appear/become resolved.
+vim.opt.showmode = false                              -- compatible with lightline
+vim.opt.showtabline = 2                           -- show tab line always
+vim.opt.list = true                                    -- show invisible characters
+vim.opt.listchars = "tab:>-,trail:~"                -- list symbols, extends,precedes are useless if warp is on
+vim.opt.foldnestmax = 1                           -- only fold top level
+vim.opt.foldmethod = "syntax"                       --fold by syntax
 
-vim.o.termguicolors = true
-vim.o.completeopt = "menuone,noselect"
+vim.opt.termguicolors = true
+vim.opt.completeopt = "menuone,noselect"
 
-vim.cmd("let g:loaded_python_provider = 0")            --- disable python2 support
-vim.cmd("autocmd FileType make set noexpandtab")        --       change space back to tab
+vim.api.nvim_set_var("loaded_python_provider", 0)  --- disable python2 support
+vim.cmd("autocmd FileType make set noexpandtab")        --change space back to tab
 vim.cmd("autocmd TermOpen * setlocal nonumber norelativenumber" )  -- disable line number in terminal mode
 
 vim.cmd( "highlight link CompeDocumentation NormalFloat" )
-vim.cmd( "let $NVIM_TUI_ENABLE_TRUE_COLOR=1" )
+vim.api.nvim_set_var("vsnip_snippet_dir", "~/.config/nvim/snippets")
 
 --: }}}
 
@@ -89,7 +87,8 @@ vim.api.nvim_set_keymap("i", "<Tab>", "v:lua.tab_complete()", {expr = true})
 vim.api.nvim_set_keymap("s", "<Tab>", "v:lua.tab_complete()", {expr = true})
 vim.api.nvim_set_keymap("i", "<S-Tab>", "v:lua.s_tab_complete()", {expr = true})
 vim.api.nvim_set_keymap("s", "<S-Tab>", "v:lua.s_tab_complete()", {expr = true})
-vim.cmd[[inoremap <silent><expr> <CR>      compe#confirm('<CR>')]]
+vim.api.nvim_set_keymap("i", "<CR>", "compe#confirm('<CR>')", {noremap=true, silent=true, expr=true})
+--vim.cmd[[inoremap <silent><expr> <CR>      compe#confirm('<CR>')]]
 
 -- }}}
 
