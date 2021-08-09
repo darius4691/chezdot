@@ -38,9 +38,15 @@
 (setq display-line-numbers-type t)
 
 (require 'pyim)
-(require 'pyim-basedict) ; 拼音词库设置，五笔用户 *不需要* 此行设置
-(pyim-basedict-enable)   ; 拼音词库，五笔用户 *不需要* 此行设置
+(require 'pyim-basedict)
+(require 'pyim-greatdict) ; 拼音词库设置，五笔用户 *不需要* 此行设置
+;(pyim-basedict-enable)   ; 拼音词库，五笔用户 *不需要* 此行设置
+(pyim-greatdict-enable)   ; 拼音词库，五笔用户 *不需要* 此行设置
+(pyim-basedict-enable)
 (setq default-input-method "pyim")
+(setq dash-docs-enable-debugging nil)
+(setq dash-docs-browser-func 'eww)
+(if (file-exists-p "/bin/fish") (setq vterm-shell "/bin/fish") (setq vterm-shell "/bin/fish"))
 
 
 (add-hook 'LaTeX-mode-hook 'turn-on-auto-fill) ; 在latex模式下输入文字自动换行
