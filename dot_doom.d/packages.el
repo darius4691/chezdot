@@ -8,11 +8,10 @@
 
 ;; To install SOME-PACKAGE from MELPA, ELPA or emacsmirror:
 (package! pyim-basedict)
-(package! posframe)
-(package! pyim)
-(package! helm-dash)
 (package! pyim-greatdict
   :recipe (:host github :repo "tumashu/pyim-greatdict"))
+(package! posframe)
+(package! pyim)
 
 ;; To install a package directly from a remote git repo, you must specify a
 ;; `:recipe'. You'll find documentation on what `:recipe' accepts here:

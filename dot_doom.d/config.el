@@ -41,8 +41,8 @@
 (require 'pyim-basedict)
 (require 'pyim-greatdict) ; 拼音词库设置，五笔用户 *不需要* 此行设置
 ;(pyim-basedict-enable)   ; 拼音词库，五笔用户 *不需要* 此行设置
-(pyim-greatdict-enable)   ; 拼音词库，五笔用户 *不需要* 此行设置
 (pyim-basedict-enable)
+(pyim-greatdict-enable)   ; 拼音词库，五笔用户 *不需要* 此行设置
 (setq default-input-method "pyim")
 (setq dash-docs-enable-debugging nil)
 (setq dash-docs-browser-func 'eww)
