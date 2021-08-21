@@ -43,6 +43,8 @@
 ;(pyim-basedict-enable)   ; 拼音词库，五笔用户 *不需要* 此行设置
 (pyim-basedict-enable)
 (pyim-greatdict-enable)   ; 拼音词库，五笔用户 *不需要* 此行设置
+(setq pyim-punctuation-translate-p '(no auto yes)) ;全角半角问题
+(setq pyim-punctuation-dict nil) ;全角半角问题
 (setq default-input-method "pyim")
 (setq dash-docs-enable-debugging nil)
 (setq dash-docs-browser-func 'eww)
