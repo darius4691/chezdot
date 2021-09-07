@@ -46,6 +46,7 @@
 (setq pyim-punctuation-translate-p '(no auto yes)) ;全角半角问题
 (setq pyim-punctuation-dict nil) ;全角半角问题
 (setq default-input-method "pyim")
+(pyim-default-scheme 'xiaohe-shuangpin)
 (setq dash-docs-enable-debugging nil)
 (setq dash-docs-browser-func 'eww)
 (if (file-exists-p "/bin/fish") (setq vterm-shell "/bin/fish") (setq vterm-shell "/bin/fish"))

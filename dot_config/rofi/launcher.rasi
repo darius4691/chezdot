@@ -7,18 +7,18 @@
  *
  */
 
+
+
 configuration {
-	font:							"FiraCode Nerd Font 12";
+    font:                           "FiraCode Nerd Font 12";
     show-icons:                     true;
-	icon-theme: 					"Papirus";
-    display-drun: 					"";
-    display-combi: 					" ";
-    display-ssh: 					"歷";
+    icon-theme:                     "Papirus";
+    display-drun:                   "";
+    display-combi:                  " ";
+    display-ssh:                    "歷";
     drun-display-format:            "{name}";
     disable-history:                false;
-    fullscreen:                     false;
-	hide-scrollbar: 				true;
-	sidebar-mode: 					false;
+    sidebar-mode:                   false;
 }
 
 @import "colors.rasi"
@@ -27,21 +27,21 @@ window {
     transparency:                   "real";
     background-color:               @bg;
     text-color:                     @fg;
-	border:							0px 0px 0px 0px;
-	border-color:					@ac;
+    border:                         0px 0px 0px 0px;
+    border-color:                   @ac;
     border-radius:                  0px;
-	width:							500px;
+    width:                          500px;
     location:                       center;
     x-offset:                       0;
     y-offset:                       0;
 }
 
 prompt {
-    enabled: 						true;
-	padding: 						0px;
-	background-color: 				@bga;
-	text-color: 					@se;
-	font:							"FiraCode Nerd Font 12";
+    enabled:                        true;
+    padding:                        0px;
+    background-color:               @bga;
+    text-color:                     @se;
+    font:                           "FiraCode Nerd Font 12";
 }
 
 entry {
@@ -51,18 +51,18 @@ entry {
     expand:                         true;
     horizontal-align:               0;
     placeholder:                    "Search...";
-	padding: 						0px 0px 0px 5px;
+    padding:                        0px 0px 0px 5px;
     blink:                          true;
 }
 
 inputbar {
-	children: 						[ prompt, entry ];
+    children:                       [ prompt, entry ];
     background-color:               @bga;
     text-color:                     @fg;
     expand:                         false;
-	border:							0px 0px 1px 0px;
+    border:                         0px 0px 1px 0px;
     border-radius:                  0px;
-	border-color:					@se;
+    border-color:                   @se;
     margin:                         0px;
     padding:                        10px;
 }
@@ -80,11 +80,11 @@ listview {
 
 mainbox {
     background-color:               @al;
-	border:							0px;
+    border:                         0px;
     border-radius:                  0px;
-	border-color:					@ac;
+    border-color:                   @ac;
     children:                       [ inputbar, listview ];
-    spacing:                       	5px;
+    spacing:                        5px;
     padding:                        5px;
 }
 
@@ -93,15 +93,19 @@ element {
     text-color:                     @fg;
     orientation:                    horizontal;
     border-radius:                  0px;
-	padding: 						8px;
+    padding:                        8px;
 }
 
 element-icon {
+    background-color:               inherit;
+    text-color:                     inherit;
     size:                           30px;
     border:                         0px;
 }
 
 element-text {
+    background-color:               inherit;
+    text-color:                     inherit;
     expand:                         true;
     horizontal-align:               0;
     vertical-align:                 0.5;
@@ -111,7 +115,7 @@ element-text {
 element selected {
     background-color:               @se;
     text-color:                     @bg;
-	border:							0px 0px 0px 0px;
+    border:                         0px 0px 0px 0px;
     border-radius:                  0px;
-    border-color:                  	@ac;
+    border-color:                   @ac;
 }
