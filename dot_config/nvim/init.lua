@@ -1,9 +1,4 @@
 -- vim:foldmethod=marker
--- Neovide{{{
-vim.api.nvim_set_var("neovide_transparency", 0.8)
-vim.api.nvim_set_var("neovide_cursor_vfx_mode", "railgun")
-vim.opt.guifont="FiraCode Nerd Font Mono"
--- }}}
 
 -- Defaults {{{
 vim.cmd("syntax enable") -- syntax highlight
@@ -43,51 +38,51 @@ vim.cmd("autocmd FileType make set noexpandtab")        --change space back to t
 vim.cmd("autocmd TermOpen * setlocal nonumber norelativenumber" )  -- disable line number in terminal mode
 
 vim.cmd( "highlight link CompeDocumentation NormalFloat" )
-vim.api.nvim_set_var("vsnip_snippet_dir", "~/.config/nvim/snippets")
+--vim.api.nvim_set_var("vsnip_snippet_dir", "~/.config/nvim/snippets")
 
 --: }}}
 
 -- Redefine tab completion {{{
-local t = function(str)
-  return vim.api.nvim_replace_termcodes(str, true, true, true)
-end
-
-local check_back_space = function()
-    local col = vim.fn.col('.') - 1
-    if col == 0 or vim.fn.getline('.'):sub(col, col):match('%s') then
-        return true
-    else
-        return false
-    end
-end
-
-_G.tab_complete = function()
-  if vim.fn.pumvisible() == 1 then
-    return t "<C-n>"
-  elseif vim.fn.call("vsnip#available", {1}) == 1 then
-    return t "<Plug>(vsnip-expand-or-jump)"
-  elseif check_back_space() then
-    return t "<Tab>"
-  else
-    return vim.fn['compe#complete']()
-  end
-end
-
-_G.s_tab_complete = function()
-  if vim.fn.pumvisible() == 1 then
-    return t "<C-p>"
-  elseif vim.fn.call("vsnip#jumpable", {-1}) == 1 then
-    return t "<Plug>(vsnip-jump-prev)"
-  else
-    return t "<S-Tab>"
-  end
-end
-
-vim.api.nvim_set_keymap("i", "<Tab>", "v:lua.tab_complete()", {expr = true})
-vim.api.nvim_set_keymap("s", "<Tab>", "v:lua.tab_complete()", {expr = true})
-vim.api.nvim_set_keymap("i", "<S-Tab>", "v:lua.s_tab_complete()", {expr = true})
-vim.api.nvim_set_keymap("s", "<S-Tab>", "v:lua.s_tab_complete()", {expr = true})
-vim.api.nvim_set_keymap("i", "<CR>", "compe#confirm('<CR>')", {noremap=true, silent=true, expr=true})
+--local t = function(str)
+--  return vim.api.nvim_replace_termcodes(str, true, true, true)
+--end
+--
+--local check_back_space = function()
+--    local col = vim.fn.col('.') - 1
+--    if col == 0 or vim.fn.getline('.'):sub(col, col):match('%s') then
+--        return true
+--    else
+--        return false
+--    end
+--end
+--
+--_G.tab_complete = function()
+--  if vim.fn.pumvisible() == 1 then
+--    return t "<C-n>"
+--  elseif vim.fn.call("vsnip#available", {1}) == 1 then
+--    return t "<Plug>(vsnip-expand-or-jump)"
+--  elseif check_back_space() then
+--    return t "<Tab>"
+--  else
+--    return vim.fn['compe#complete']()
+--  end
+--end
+--
+--_G.s_tab_complete = function()
+--  if vim.fn.pumvisible() == 1 then
+--    return t "<C-p>"
+--  elseif vim.fn.call("vsnip#jumpable", {-1}) == 1 then
+--    return t "<Plug>(vsnip-jump-prev)"
+--  else
+--    return t "<S-Tab>"
+--  end
+--end
+--
+--vim.api.nvim_set_keymap("i", "<Tab>", "v:lua.tab_complete()", {expr = true})
+--vim.api.nvim_set_keymap("s", "<Tab>", "v:lua.tab_complete()", {expr = true})
+--vim.api.nvim_set_keymap("i", "<S-Tab>", "v:lua.s_tab_complete()", {expr = true})
+--vim.api.nvim_set_keymap("s", "<S-Tab>", "v:lua.s_tab_complete()", {expr = true})
+--vim.api.nvim_set_keymap("i", "<CR>", "compe#confirm('<CR>')", {noremap=true, silent=true, expr=true})
 --vim.cmd[[inoremap <silent><expr> <CR>      compe#confirm('<CR>')]]
 
 -- }}}
@@ -102,42 +97,40 @@ require('packer').startup(function()
         config = function()
             require'lspconfig'.pyright.setup{}
             require'lspconfig'.gopls.setup{}
-            require'lspconfig'.ccls.setup{}
+            require'lspconfig'.clangd.setup{}
             require'lspconfig'.jsonls.setup{}
             --require'nvim_lsp'.vimls.setup{}
             --require'nvim_lsp'.sumneko_lua.setup{}
         end
     }
 
-    use {'glepnir/lspsaga.nvim',
-        config = function()
-            require'lspsaga'.init_lsp_saga{}
-        end
+    use {"ms-jpq/coq_nvim",
+        branch = 'coq'
     }
 
-    use {'hrsh7th/nvim-compe',
-        requires = {'hrsh7th/vim-vsnip', 'rafamadriz/friendly-snippets'},
-        config = function()
-            require'compe'.setup {
-                preselect = 'disable',
-                source = {
-                    path = true,
-                    buffer = true,
-                    calc = true,
-                    nvim_lsp = true,
-                    nvim_lua = false,
-                    vsnip = true,
-                    spell = true 
-                }
-            }
-        end
-    }
-
-    use { 'rcarriga/nvim-dap-ui', requires = {'mfussenegger/nvim-dap'},
-        config = function()
-            require "debugger"
-        end
-    }
+--    use {'hrsh7th/nvim-compe',
+--        requires = {'hrsh7th/vim-vsnip', 'rafamadriz/friendly-snippets'},
+--        config = function()
+--            require'compe'.setup {
+--                preselect = 'disable',
+--                source = {
+--                    path = true,
+--                    buffer = true,
+--                    calc = true,
+--                    nvim_lsp = true,
+--                    nvim_lua = false,
+--                    vsnip = true,
+--                    spell = true 
+--                }
+--            }
+--        end
+--    }
+--
+    --use { 'rcarriga/nvim-dap-ui', requires = {'mfussenegger/nvim-dap'},
+    --    config = function()
+    ----        require "debugger"
+    --    end
+    --}
     -- LSP and debugger}}}
 
 
@@ -218,52 +211,10 @@ require('packer').startup(function()
             }
         end
         }
-    use { "jbyuki/nabla.nvim" }
 
     --- formatting
     use {'sbdchd/neoformat'}
 
-    use {'sindrets/diffview.nvim',
-        config = function()
-            local cb = require'diffview.config'.diffview_callback
-
-            require'diffview'.setup {
-              diff_binaries = false,    -- Show diffs for binaries
-              file_panel = {
-                width = 35,
-                use_icons = true        -- Requires nvim-web-devicons
-              },
-              key_bindings = {
-                disable_defaults = false,                   -- Disable the default key bindings
-                -- The `view` bindings are active in the diff buffers, only when the current
-                -- tabpage is a Diffview.
-                view = {
-                  ["<tab>"]     = cb("select_next_entry"),  -- Open the diff for the next file 
-                  ["<s-tab>"]   = cb("select_prev_entry"),  -- Open the diff for the previous file
-                  ["<leader>e"] = cb("focus_files"),        -- Bring focus to the files panel
-                  ["<leader>b"] = cb("toggle_files"),       -- Toggle the files panel.
-                },
-                file_panel = {
-                  ["j"]             = cb("next_entry"),         -- Bring the cursor to the next file entry
-                  ["<down>"]        = cb("next_entry"),
-                  ["k"]             = cb("prev_entry"),         -- Bring the cursor to the previous file entry.
-                  ["<up>"]          = cb("prev_entry"),
-                  ["<cr>"]          = cb("select_entry"),       -- Open the diff for the selected entry.
-                  ["o"]             = cb("select_entry"),
-                  ["<2-LeftMouse>"] = cb("select_entry"),
-                  ["-"]             = cb("toggle_stage_entry"), -- Stage / unstage the selected entry.
-                  ["S"]             = cb("stage_all"),          -- Stage all entries.
-                  ["U"]             = cb("unstage_all"),        -- Unstage all entries.
-                  ["R"]             = cb("refresh_files"),      -- Update stats and entries in the file list.
-                  ["<tab>"]         = cb("select_next_entry"),
-                  ["<s-tab>"]       = cb("select_prev_entry"),
-                  ["<leader>e"]     = cb("focus_files"),
-                  ["<leader>b"]     = cb("toggle_files"),
-                }
-              }
-            }
-        end
-    }
     --- Treesitter and highlight
     use {
         "nvim-treesitter/nvim-treesitter",
@@ -310,27 +261,23 @@ require('packer').startup(function()
             local ts = require("telescope.builtin")
             local bl = require("bufferline")
             wk.register({
-                a = {require("dapui").toggle, "toggledapui"},
+                --a = {require("dapui").toggle, "toggledapui"},
                 b = {ts.buffers, "Buffers"},
-                c = {ts.commands, "Commands"},
-                d = {require'lspsaga.provider'.preview_definition, "Defination"},
-                f = {function() ts.file_browser{hidden=true} end, "FileBrowser"},
+                d = {ts.lsp_document_symbols, "DocumentSymbolDocumentSymbols"},
                 h = {ts.help_tags, "HelpTag"},
-                k = {require('lspsaga.hover').render_hover_doc, "HoverDoc"},
-                n = {require"nabla".action, "RenderLaTex"},
-                o = {function() ts.find_files{hidden=true} end, "OpenFile"},
-                p = {ts.lsp_document_diagnostics, "Diagnostics"},
-                r = {ts.registers, "Registers"},
-                s = {require('lspsaga.rename').rename, "RenameVariable"},
-                t = {vim.lsp.buf.formatting, "Formatting"},
-                x = {require"dap".continue, "DebugRunContinue"},
-                z = {require"dap".toggle_breakpoint, "DebugBreakPoint"},
+                -- k = {require('lspsaga.hover').render_hover_doc, "HoverDoc"},
+                f = {function() ts.find_files{hidden=true} end, "OpenFile"},
+                p = {ts.diagnostics, "Diagnostics"},
+                r = {ts.lsp_references, "ListReferences"},
+                s = {vim.lsp.buf.rename, "RenameVariable"},
+                t = {ts.treesitter, "TreesitterObject"},
                 M = {"<Cmd>TodoTelescope<Cr>", "TODOs"},
-                D = {ts.lsp_definitions, "Defination"},
-                T = {ts.treesitter, "TreesitterObject"},
-                ["]"] = {require("lspsaga.diagnostic").lsp_jump_diagnostic_prev, "PrevDiag"},
-                ["["] = {require("lspsaga.diagnostic").lsp_jump_diagnostic_next, "PrevDiag"},
-                ["/"] = {ts.live_grep, "Buffers"},
+                T = {vim.lsp.buf.formatting, "Formatting"},
+                [":"] = {ts.commands, "Commands"},
+                ["]"] = {vim.diagnostic.goto_prev, "Next"},
+                ["["] = {vim.diagnostic.goto_next, "PrevDiag"},
+                ["/"] = {ts.current_buffer_fuzzy_find, "FindCurrent"},
+                ["?"] = {ts.live_grep, "LiveGrep"},
                 ["1"] = {function() bl.go_to_buffer(1) end, "which_key_ignore"},
                 ["2"] = {function() bl.go_to_buffer(2) end, "which_key_ignore"},
                 ["3"] = {function() bl.go_to_buffer(3) end, "which_key_ignore"},
@@ -341,6 +288,10 @@ require('packer').startup(function()
                 ["8"] = {function() bl.go_to_buffer(8) end, "which_key_ignore"},
                 ["9"] = {function() bl.go_to_buffer(9) end, "which_key_ignore"},
                 }, {prefix="<space>"})
+            wk.register({g={
+                d={ts.lsp_definitions, "GoToDef"},
+                D={ts.lsp_type_definitions, "GoToTypeDef"},
+            }})
       end
     }
 
