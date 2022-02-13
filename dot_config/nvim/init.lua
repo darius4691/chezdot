@@ -38,6 +38,7 @@ vim.cmd("autocmd FileType make set noexpandtab")        --change space back to t
 vim.cmd("autocmd TermOpen * setlocal nonumber norelativenumber" )  -- disable line number in terminal mode
 
 vim.cmd( "highlight link CompeDocumentation NormalFloat" )
+vim.api.nvim_set_keymap('t', '<Esc>', '<C-\\><C-n>', {noremap = true})
 --vim.api.nvim_set_var("vsnip_snippet_dir", "~/.config/nvim/snippets")
 
 --: }}}
