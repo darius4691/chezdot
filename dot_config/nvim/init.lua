@@ -16,7 +16,7 @@ vim.opt.enc = "utf-8"                               -- utf-8 by default
 vim.opt.backspace = "indent,eol,start"              -- backspace removes all (indents, EOLs, start) What is start?
 vim.opt.scrolloff = 10                            -- let 10 lines before/after cursor during scroll
 vim.opt.clipboard = "unnamedplus"                       -- use system clipboard
-vim.opt.hidden = true                                  -- TextEdit might fail if hidden is not set. 
+vim.opt.hidden = true                                  -- TextEdit might fail if hidden is not set.
 vim.opt.backup = false                                -- Some servers have issues with backup files, see #649.
 vim.opt.writebackup = false
 vim.opt.cmdheight = 2                             -- Give more space for displaying messages.
@@ -31,7 +31,8 @@ vim.opt.foldnestmax = 1                           -- only fold top level
 vim.opt.foldmethod = "syntax"                       --fold by syntax
 
 vim.opt.termguicolors = true
-vim.opt.completeopt = "menuone,noselect"
+vim.opt.completeopt = "menu,menuone,noselect"
+vim.opt.pumheight = 7
 
 vim.api.nvim_set_var("loaded_python_provider", 0)  --- disable python2 support
 vim.cmd("autocmd FileType make set noexpandtab")        --change space back to tab
@@ -39,102 +40,113 @@ vim.cmd("autocmd TermOpen * setlocal nonumber norelativenumber" )  -- disable li
 
 vim.cmd( "highlight link CompeDocumentation NormalFloat" )
 vim.api.nvim_set_keymap('t', '<Esc>', '<C-\\><C-n>', {noremap = true})
---vim.api.nvim_set_var("vsnip_snippet_dir", "~/.config/nvim/snippets")
 
 vim.go.cscopequickfix = "s-,c-,d-,i-,t-,e-,a-"
 vim.go.cscopeverbose = false
 
 --: }}}
 
--- Redefine tab completion {{{
---local t = function(str)
---  return vim.api.nvim_replace_termcodes(str, true, true, true)
---end
---
---local check_back_space = function()
---    local col = vim.fn.col('.') - 1
---    if col == 0 or vim.fn.getline('.'):sub(col, col):match('%s') then
---        return true
---    else
---        return false
---    end
---end
---
---_G.tab_complete = function()
---  if vim.fn.pumvisible() == 1 then
---    return t "<C-n>"
---  elseif vim.fn.call("vsnip#available", {1}) == 1 then
---    return t "<Plug>(vsnip-expand-or-jump)"
---  elseif check_back_space() then
---    return t "<Tab>"
---  else
---    return vim.fn['compe#complete']()
---  end
---end
---
---_G.s_tab_complete = function()
---  if vim.fn.pumvisible() == 1 then
---    return t "<C-p>"
---  elseif vim.fn.call("vsnip#jumpable", {-1}) == 1 then
---    return t "<Plug>(vsnip-jump-prev)"
---  else
---    return t "<S-Tab>"
---  end
---end
---
---vim.api.nvim_set_keymap("i", "<Tab>", "v:lua.tab_complete()", {expr = true})
---vim.api.nvim_set_keymap("s", "<Tab>", "v:lua.tab_complete()", {expr = true})
---vim.api.nvim_set_keymap("i", "<S-Tab>", "v:lua.s_tab_complete()", {expr = true})
---vim.api.nvim_set_keymap("s", "<S-Tab>", "v:lua.s_tab_complete()", {expr = true})
---vim.api.nvim_set_keymap("i", "<CR>", "compe#confirm('<CR>')", {noremap=true, silent=true, expr=true})
---vim.cmd[[inoremap <silent><expr> <CR>      compe#confirm('<CR>')]]
-
--- }}}
-
 -- Packer {{{
-require('packer').startup(function()
+require('packer').startup(function(use)
     -- Packer itself
     use 'wbthomason/packer.nvim'
 
     -- LSP and debugger {{{
-    use {"neovim/nvim-lspconfig",
+
+    use {"L3MON4D3/LuaSnip"}
+
+    use {
+        "hrsh7th/nvim-cmp",
+        requires = {
+            "hrsh7th/cmp-path",
+            "hrsh7th/cmp-buffer",
+            "hrsh7th/cmp-nvim-lsp",
+            "quangnguyen30192/cmp-nvim-tags",
+            'saadparwaiz1/cmp_luasnip'
+        },
         config = function()
-            require'lspconfig'.pyright.setup{}
-            require'lspconfig'.gopls.setup{}
-            require'lspconfig'.clangd.setup{}
-            require'lspconfig'.jsonls.setup{}
-            --require'nvim_lsp'.vimls.setup{}
-            --require'nvim_lsp'.sumneko_lua.setup{}
+                local has_words_before = function()
+                    local line, col = unpack(vim.api.nvim_win_get_cursor(0))
+                    return col ~= 0 and vim.api.nvim_buf_get_lines(0, line - 1, line, true)[1]:sub(col, col):match("%s") == nil
+                end
+
+                local luasnip = require("luasnip")
+                local cmp = require("cmp")
+                cmp.setup{
+                    snippet = {
+                        expand = function(args)
+                            require'luasnip'.lsp_expand(args.body)
+                            vim.fn["vsnip#anonymous"](args.body)
+                        end
+                    },
+                    sources = cmp.config.sources({
+                        {name = "nvim_lsp"},
+                        {name = "luasnip"},
+                        {name = "buffer"},
+                        {name = "tags", max_item_count = 5}
+                    }),
+                    mapping = {
+                        ["<Tab>"] = cmp.mapping(
+                            function(fallback)
+                                if cmp.visible() then
+                                    cmp.select_next_item()
+                                elseif luasnip.expand_or_jumpable() then
+                                    luasnip.expand_or_jump()
+                                elseif has_words_before() then
+                                    cmp.complete()
+                                else
+                                    fallback()
+                                end
+                            end, { "i", "s" }),
+                        ["<S-Tab>"] = cmp.mapping(
+                            function(fallback)
+                                if cmp.visible() then
+                                    cmp.select_prev_item()
+                                elseif luasnip.jumpable(-1) then
+                                    luasnip.jump(-1)
+                                else
+                                    fallback()
+                                end
+                            end, { "i", "s" }),
+                        }
+                  }
         end
     }
 
-    use {"ms-jpq/coq_nvim",
-        branch = 'coq'
+    use {"neovim/nvim-lspconfig",
+        config = function()
+            local capabilities = vim.lsp.protocol.make_client_capabilities()
+            capabilities = require('cmp_nvim_lsp').update_capabilities(capabilities)
+            require'lspconfig'.pyright.setup{capabilities=capabilities}
+            require'lspconfig'.gopls.setup{capabilities=capabilities}
+            require'lspconfig'.clangd.setup{capabilities=capabilities}
+            require'lspconfig'.jsonls.setup{capabilities=capabilities}
+            require'lspconfig'.sumneko_lua.setup{
+                capabilities=capabilities,
+                settings = {
+                    Lua = {
+                      runtime = {
+                        -- Tell the language server which version of Lua you're using (most likely LuaJIT in the case of Neovim)
+                        version = 'LuaJIT',
+                      },
+                      diagnostics = {
+                        -- Get the language server to recognize the `vim` global
+                        globals = {'vim'},
+                      },
+                      workspace = {
+                        -- Make the server aware of Neovim runtime files
+                        library = vim.api.nvim_get_runtime_file("", true),
+                      },
+                      -- Do not send telemetry data containing a randomized but unique identifier
+                      telemetry = {
+                        enable = false,
+                      },
+                    },
+                  }
+            }
+        end
     }
 
---    use {'hrsh7th/nvim-compe',
---        requires = {'hrsh7th/vim-vsnip', 'rafamadriz/friendly-snippets'},
---        config = function()
---            require'compe'.setup {
---                preselect = 'disable',
---                source = {
---                    path = true,
---                    buffer = true,
---                    calc = true,
---                    nvim_lsp = true,
---                    nvim_lua = false,
---                    vsnip = true,
---                    spell = true 
---                }
---            }
---        end
---    }
---
-    --use { 'rcarriga/nvim-dap-ui', requires = {'mfussenegger/nvim-dap'},
-    --    config = function()
-    ----        require "debugger"
-    --    end
-    --}
     -- LSP and debugger}}}
 
 
@@ -145,11 +157,6 @@ require('packer').startup(function()
             vim.cmd[[colorscheme onedark]]
         end
     }
-
-
-    -- Automatically creates missing LSP diagnostics highlight groups for color schemes that don't yet support the Neovim 0.5 builtin lsp client.
-    --use 'folke/lsp-colors.nvim'
-
 
     --- lualine
     use {'hoob3rt/lualine.nvim',
@@ -166,7 +173,7 @@ require('packer').startup(function()
                 lualine_b = {{'branch',icon = ''}},
                 lualine_c = {
                     {'filename', file_status = true},
-                    {'diagnostics', sources = {"nvim_lsp"}}, 
+                    {'diagnostics', sources = {"nvim_lsp"}},
                 },
                 lualine_x = { 'encoding', 'fileformat', 'filetype' },
                 lualine_y = { 'progress' },
@@ -223,7 +230,7 @@ require('packer').startup(function()
     use {
         "nvim-treesitter/nvim-treesitter",
         run = ':TSUpdate',
-        config = function() 
+        config = function()
             require'nvim-treesitter.configs'.setup{
                 ensure_installed = {"python", "go", "json", "bash", "lua", "c", "cpp"},
                 highlight = {enable = true},
@@ -267,28 +274,21 @@ require('packer').startup(function()
             wk.register({
                 --a = {require("dapui").toggle, "toggledapui"},
                 b = {ts.buffers, "Buffers"},
-                d = {ts.lsp_document_symbols, "DocumentSymbolDocumentSymbols"},
-                h = {ts.help_tags, "HelpTag"},
-                q = {ts.quickfix, "QuickFix"},
-                -- k = {require('lspsaga.hover').render_hover_doc, "HoverDoc"},
                 c = {
                     function()
-                        -- find and link cscope
-                        file = vim.fn.findfile("cscope.out", ".;")
+                        local file = vim.fn.findfile("cscope.out", ".;")
                         vim.cmd("silent! cs add "..file)
-
-                        local srcfile = vim.api.nvim_buf_get_name(0)
                         vim.fn.setqflist({})
-                        vim.cmd([[normal! mY]])
                         vim.cmd("cs find c <cword>")
                         vim.cmd([[cclose]])
-                        local curfile = vim.api.nvim_buf_get_name(0)
-                        if curfile ~= srcfile then
-                            vim.cmd([[normal! `Y]])
-                        end
                         ts.quickfix()
                     end,
                     "CscopeRefs"},
+                d = {ts.lsp_document_symbols, "DocumentSymbolDocumentSymbols"},
+                h = {ts.help_tags, "HelpTag"},
+                m = {ts.marks, "VimMarks"},
+                q = {ts.quickfix, "QuickFix"},
+                -- k = {require('lspsaga.hover').render_hover_doc, "HoverDoc"},
                 f = {function() ts.find_files{hidden=true} end, "OpenFile"},
                 p = {ts.diagnostics, "Diagnostics"},
                 r = {ts.lsp_references, "ListReferences"},
@@ -320,7 +320,7 @@ require('packer').startup(function()
     }
 
     use {'lewis6991/gitsigns.nvim', requires = {'nvim-lua/plenary.nvim'},
-        config = function() 
+        config = function()
         require('gitsigns').setup()
     end
     }
