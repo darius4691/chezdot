@@ -41,6 +41,9 @@ vim.cmd( "highlight link CompeDocumentation NormalFloat" )
 vim.api.nvim_set_keymap('t', '<Esc>', '<C-\\><C-n>', {noremap = true})
 --vim.api.nvim_set_var("vsnip_snippet_dir", "~/.config/nvim/snippets")
 
+vim.go.cscopequickfix = "s-,c-,d-,i-,t-,e-,a-"
+vim.go.cscopeverbose = false
+
 --: }}}
 
 -- Redefine tab completion {{{
@@ -266,7 +269,26 @@ require('packer').startup(function()
                 b = {ts.buffers, "Buffers"},
                 d = {ts.lsp_document_symbols, "DocumentSymbolDocumentSymbols"},
                 h = {ts.help_tags, "HelpTag"},
+                q = {ts.quickfix, "QuickFix"},
                 -- k = {require('lspsaga.hover').render_hover_doc, "HoverDoc"},
+                c = {
+                    function()
+                        -- find and link cscope
+                        file = vim.fn.findfile("cscope.out", ".;")
+                        vim.cmd("silent! cs add "..file)
+
+                        local srcfile = vim.api.nvim_buf_get_name(0)
+                        vim.fn.setqflist({})
+                        vim.cmd([[normal! mY]])
+                        vim.cmd("cs find c <cword>")
+                        vim.cmd([[cclose]])
+                        local curfile = vim.api.nvim_buf_get_name(0)
+                        if curfile ~= srcfile then
+                            vim.cmd([[normal! `Y]])
+                        end
+                        ts.quickfix()
+                    end,
+                    "CscopeRefs"},
                 f = {function() ts.find_files{hidden=true} end, "OpenFile"},
                 p = {ts.diagnostics, "Diagnostics"},
                 r = {ts.lsp_references, "ListReferences"},
@@ -274,6 +296,7 @@ require('packer').startup(function()
                 t = {ts.treesitter, "TreesitterObject"},
                 M = {"<Cmd>TodoTelescope<Cr>", "TODOs"},
                 T = {vim.lsp.buf.formatting, "Formatting"},
+                ["."] = {ts.resume, "Resume"},
                 [":"] = {ts.commands, "Commands"},
                 ["]"] = {vim.diagnostic.goto_prev, "Next"},
                 ["["] = {vim.diagnostic.goto_next, "PrevDiag"},
