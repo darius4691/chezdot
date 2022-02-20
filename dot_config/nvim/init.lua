@@ -7,6 +7,7 @@
 --   git clone https://github.com/wbthomason/packer.nvim "$env:LOCALAPPDATA\nvim-data\site\pack\packer\start\packer.nvim"
 -- }}}
 
+
 -- .nvimrc.lua exmaple {{{
 --[[
 -- setting luasnip location; opt.paths gives a list of paths.
@@ -194,7 +195,6 @@ require('packer').startup(function(use)
                     snippet = {
                         expand = function(args)
                             luasnip.lsp_expand(args.body)
-                            vim.fn["vsnip#anonymous"](args.body)
                         end
                     },
                     sources = cmp.config.sources({
@@ -226,7 +226,8 @@ require('packer').startup(function(use)
                                     fallback()
                                 end
                             end, { "i", "s" }),
-                        }
+                        ['<CR>'] = cmp.mapping.confirm({ select = true })
+                        },
                   }
         end
     }
@@ -269,11 +270,11 @@ require('packer').startup(function(use)
     use {
         'mfussenegger/nvim-dap',
         config = function()
-            vim.fn.sign_define('DapBreakpoint', { text='', texthl='DapBreakpoint', linehl='', numhl='DapBreakpoint' })
-            vim.fn.sign_define('DapBreakpointCondition', { text='ﳁ', texthl='DapBreakpoint', linehl='', numhl='DapBreakpoint' })
-            vim.fn.sign_define('DapBreakpointRejected', { text='', texthl='DapBreakpoint', linehl='', numhl= 'DapBreakpoint' })
-            vim.fn.sign_define('DapLogPoint', { text='', texthl='DapLogPoint', linehl='DapLogPoint', numhl= 'DapLogPoint' })
-            vim.fn.sign_define('DapStopped', { text='', texthl='DapStopped', linehl='DapStopped', numhl= 'DapStopped' })
+            vim.fn.sign_define('DapBreakpoint',          { text='', texthl='DapBreakpoint', linehl='',            numhl='DapBreakpoint'  })
+            vim.fn.sign_define('DapBreakpointCondition', { text='ﳁ', texthl='DapBreakpoint', linehl='',            numhl='DapBreakpoint'  })
+            vim.fn.sign_define('DapBreakpointRejected',  { text='', texthl='DapBreakpoint', linehl='',            numhl= 'DapBreakpoint' })
+            vim.fn.sign_define('DapLogPoint',            { text='', texthl='DapLogPoint',   linehl='DapLogPoint', numhl= 'DapLogPoint'   })
+            vim.fn.sign_define('DapStopped',             { text='', texthl='DapStopped',    linehl='DapStopped',  numhl= 'DapStopped'    })
             local repl = require 'dap.repl'
             local dap = require 'dap'
             repl.commands = vim.tbl_extend(
@@ -281,6 +282,8 @@ require('packer').startup(function(use)
                     frames = {'.frames', '.f'},
                     scopes = {'.scopes', '.s'},
                     custom_commands = {
+                        -- conditional breakpoints
+                        ['.bb'] = dap.set_breakpoint,
                         ['.terminate'] = dap.terminate,
                         ['.restart'] = dap.restart,
                     }
@@ -413,6 +416,14 @@ require('packer').startup(function(use)
             }
         end
     }
+
+    -- debug virtual text
+    use {
+        'theHamsta/nvim-dap-virtual-text',
+        config = function()
+            require("nvim-dap-virtual-text").setup()
+        end
+    }
     --- hightlight
     use {
         "folke/todo-comments.nvim",
@@ -429,8 +440,18 @@ require('packer').startup(function(use)
     }
 
     -- telescope
-    use {"nvim-telescope/telescope.nvim",
-        requires = {"nvim-lua/popup.nvim", "nvim-lua/plenary.nvim"},
+    use {
+        "nvim-telescope/telescope.nvim",
+        requires = {
+            "nvim-lua/popup.nvim",
+            "nvim-lua/plenary.nvim",
+            "nvim-telescope/telescope-dap.nvim"
+        },
+        config = function()
+            local ts = require("telescope")
+            ts.setup()
+            ts.load_extension('dap')
+        end
     }
     -- }}}
 
@@ -439,11 +460,11 @@ require('packer').startup(function(use)
         "folke/which-key.nvim",
         config = function()
             local wk = require("which-key")
+            local te = require('telescope')
             local ts = require("telescope.builtin")
             local bl = require("bufferline")
             local dap = require("dap")
             wk.register({
-                --a = {require("dapui").toggle, "toggledapui"},
                 b = {ts.buffers, "Buffers"},
                 c = {
                     function()
@@ -455,7 +476,14 @@ require('packer').startup(function(use)
                         ts.quickfix()
                     end,
                     "CscopeRefs"},
-                d = {ts.lsp_document_symbols, "DocumentSymbolDocumentSymbols"},
+                d = {
+                    name = 'DapList',
+                    c = {te.extensions.dap.commands, "Commands"},
+                    s = {te.extensions.dap.configuration, "Settings(cfg)"},
+                    b = {te.extensions.dap.list_breakpoints, "BreakPoints"},
+                    v = {te.extensions.dap.variables, "Variables"},
+                    f = {te.extensions.dap.frames, "Frames(stack)"}
+                },
                 h = {ts.help_tags, "HelpTag"},
                 m = {ts.marks, "VimMarks"},
                 q = {ts.quickfix, "QuickFix"},
@@ -467,8 +495,9 @@ require('packer').startup(function(use)
                 t = {ts.treesitter, "TreesitterObject"},
                 B = {dap.toggle_breakpoint, "DapBreak"},
                 C = {dap.continue, "DapContinue"},
-                O = {dap.repl.open, "DapREPL"},
+                D = {ts.lsp_document_symbols, "DocumentSymbol"},
                 M = {"<Cmd>TodoTelescope<Cr>", "TODOs"},
+                O = {dap.repl.open, "DapREPL"},
                 T = {vim.lsp.buf.formatting, "Formatting"},
                 ["."] = {ts.resume, "Resume"},
                 [":"] = {ts.commands, "Commands"},
@@ -496,3 +525,4 @@ require('packer').startup(function(use)
 
 end)
 --}}}
+
