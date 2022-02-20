@@ -1,4 +1,12 @@
 -- vim:foldmethod=marker
+-- README {{{
+-- Install packer first
+-- Unix-like:
+--   git clone --depth 1 https://github.com/wbthomason/packer.nvim ~/.local/share/nvim/site/pack/packer/start/packer.nvim
+-- Windows(PowerShell):
+--   git clone https://github.com/wbthomason/packer.nvim "$env:LOCALAPPDATA\nvim-data\site\pack\packer\start\packer.nvim"
+-- }}}
+
 -- .nvimrc exmaple {{{
 --[[
 -- setting luasnip location; opt.paths gives a list of paths.
