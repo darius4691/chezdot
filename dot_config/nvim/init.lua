@@ -153,9 +153,6 @@ vim.opt.termguicolors = true                        -- enable true color
 vim.opt.completeopt = "menu,menuone,noselect"       -- completion menu options
 vim.opt.pumheight = 7                               -- limit the completion menu height
 
-vim.opt.exrc = true                                 -- enables loading .nvimrc or .exrc file in cwd
--- vim.opt.secure = true                               -- do not exec write or command in .nvimrc or .exrc file
-
 vim.opt.cscopequickfix = "s-,c-,d-,i-,t-,e-,a-"
 vim.opt.cscopeverbose = false
 
@@ -277,6 +274,18 @@ require('packer').startup(function(use)
             vim.fn.sign_define('DapBreakpointRejected', { text='', texthl='DapBreakpoint', linehl='', numhl= 'DapBreakpoint' })
             vim.fn.sign_define('DapLogPoint', { text='', texthl='DapLogPoint', linehl='DapLogPoint', numhl= 'DapLogPoint' })
             vim.fn.sign_define('DapStopped', { text='', texthl='DapStopped', linehl='DapStopped', numhl= 'DapStopped' })
+            local repl = require 'dap.repl'
+            local dap = require 'dap'
+            repl.commands = vim.tbl_extend(
+                'force', repl.commands, {
+                    frames = {'.frames', '.f'},
+                    scopes = {'.scopes', '.s'},
+                    custom_commands = {
+                        ['.terminate'] = dap.terminate,
+                        ['.restart'] = dap.restart,
+                    }
+                }
+            )
         end
     }
 
