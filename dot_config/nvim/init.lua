@@ -7,7 +7,7 @@
 --   git clone https://github.com/wbthomason/packer.nvim "$env:LOCALAPPDATA\nvim-data\site\pack\packer\start\packer.nvim"
 -- }}}
 
--- .nvimrc exmaple {{{
+-- .nvimrc.lua exmaple {{{
 --[[
 -- setting luasnip location; opt.paths gives a list of paths.
 -- The structure shold be like in https://github.com/rafamadriz/friendly-snippets
@@ -68,7 +68,7 @@ require('dap.ext.vscode').load_launchjs()
 --     name = 'Debug';
 --     request = 'launch';
 --     showLog = false;
---     program = "${file}";
+--     program = "${file}"; -- ${workspaceFolder} for current directory
 --     dlvToolPath = vim.fn.exepath('dlv')  -- Adjust to where delve is installed
 --   },
 -- }
@@ -154,7 +154,7 @@ vim.opt.completeopt = "menu,menuone,noselect"       -- completion menu options
 vim.opt.pumheight = 7                               -- limit the completion menu height
 
 vim.opt.exrc = true                                 -- enables loading .nvimrc or .exrc file in cwd
-vim.opt.secure = true                               -- do not exec write or command in .nvimrc or .exrc file
+-- vim.opt.secure = true                               -- do not exec write or command in .nvimrc or .exrc file
 
 vim.opt.cscopequickfix = "s-,c-,d-,i-,t-,e-,a-"
 vim.opt.cscopeverbose = false
@@ -269,7 +269,16 @@ require('packer').startup(function(use)
         end
     }
 
-    use {'mfussenegger/nvim-dap'}
+    use {
+        'mfussenegger/nvim-dap',
+        config = function()
+            vim.fn.sign_define('DapBreakpoint', { text='', texthl='DapBreakpoint', linehl='', numhl='DapBreakpoint' })
+            vim.fn.sign_define('DapBreakpointCondition', { text='ﳁ', texthl='DapBreakpoint', linehl='', numhl='DapBreakpoint' })
+            vim.fn.sign_define('DapBreakpointRejected', { text='', texthl='DapBreakpoint', linehl='', numhl= 'DapBreakpoint' })
+            vim.fn.sign_define('DapLogPoint', { text='', texthl='DapLogPoint', linehl='DapLogPoint', numhl= 'DapLogPoint' })
+            vim.fn.sign_define('DapStopped', { text='', texthl='DapStopped', linehl='DapStopped', numhl= 'DapStopped' })
+        end
+    }
 
     -- LSP and debugger}}}
 
@@ -277,7 +286,13 @@ require('packer').startup(function(use)
 
     use {'navarasu/onedark.nvim',
         config = function()
-            vim.cmd[[colorscheme onedark]]
+            vim.cmd[[
+            colorscheme onedark
+            highlight DapBreakpoint ctermbg=0 guifg=#993939 guibg=#31353f
+            highlight DapLogPoint   ctermbg=0 guifg=#61afef guibg=#31353f
+            highlight DapStopped    ctermbg=0 guifg=#98c379 guibg=#31353f
+            ]]
+
         end
     }
 
@@ -326,6 +341,20 @@ require('packer').startup(function(use)
     --- }}}
 
     -- tools {{{
+    -- enable directory-based config files
+    use {
+        "klen/nvim-config-local",
+        config = function()
+            require('config-local').setup {
+            -- Default configuration (optional)
+            config_files = {".nvimrc.lua", ".nvimrc"},  -- Config file patterns to load (lua supported)
+            hashfile = vim.fn.stdpath("data") .. "/config-local", -- Where the plugin keeps files data
+            autocommands_create = true,                 -- Create autocommands (VimEnter, DirectoryChanged)
+            commands_create = true,                     -- Create commands (ConfigSource, ConfigEdit, ConfigTrust, ConfigIgnore)
+            silent = false,                             -- Disable plugin messages (Config loaded/ignored)
+            }
+        end
+    }
     -- git integration
     use 'tpope/vim-fugitive'
     -- align
