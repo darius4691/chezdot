@@ -7,120 +7,6 @@
 --   git clone https://github.com/wbthomason/packer.nvim "$env:LOCALAPPDATA\nvim-data\site\pack\packer\start\packer.nvim"
 -- }}}
 
-
--- .nvimrc.lua exmaple {{{
---[[
--- setting luasnip location; opt.paths gives a list of paths.
--- The structure shold be like in https://github.com/rafamadriz/friendly-snippets
--- containing a package.json
-require("luasnip.loaders.from_vscode").load(opts)
-
--- setting debugger:
-local dap = require('dap')
-
--- launch .vscode/launch.json file
-require('dap.ext.vscode').load_launchjs()
-
--- python debugger {{{
--- virtual environment is recommanded: pip install debugpy
--- dap.adapters.python = {
---   type = 'executable';
---   command = "python";
---   args = { '-m', 'debugpy.adapter' };
--- }
--- dap.configurations.python = {
---   {
---     -- The first three options are required by nvim-dap
---     type = 'python'; -- the type here established the link to the adapter definition: `dap.adapters.python`
---     request = 'launch';
---     name = "Launch file";
---
---     -- Options below are for debugpy, see https://github.com/microsoft/debugpy/wiki/Debug-configuration-settings for supported options
---
---     program = "${file}"; -- This configuration will launch the current file if used.
---     pythonPath = function()
---       -- debugpy supports launching an application with a different interpreter then the one used to launch debugpy itself.
---       -- The code below looks for a `venv` or `.venv` folder in the current directly and uses the python within.
---       -- You could adapt this - to for example use the `VIRTUAL_ENV` environment variable.
---       local cwd = vim.fn.getcwd()
---       if vim.fn.executable(cwd .. '/venv/bin/python') == 1 then
---         return cwd .. '/venv/bin/python'
---       elseif vim.fn.executable(cwd .. '/.venv/bin/python') == 1 then
---         return cwd .. '/.venv/bin/python'
---       else
---         return '/usr/bin/python'
---       end
---     end;
---   },
--- }
--- }}}
-
--- go debugger {{{
--- install delve: go install github.com/go-delve/delve/cmd/dlv@latest
--- install vscode-go: git clone https://github.com/golang/vscode-go && cd vscode-go && npm install && npm run compile
--- dap.adapters.go = {
---   type = 'executable';
---   command = 'node';
---   args = {os.getenv('HOME') .. '/dev/golang/vscode-go/dist/debugAdapter.js'};
--- }
--- dap.configurations.go = {
---   {
---     type = 'go';
---     name = 'Debug';
---     request = 'launch';
---     showLog = false;
---     program = "${file}"; -- ${workspaceFolder} for current directory
---     dlvToolPath = vim.fn.exepath('dlv')  -- Adjust to where delve is installed
---   },
--- }
--- }}}
-
--- c,cpp,rust debugger {{{
--- download and unzip from https://github.com/microsoft/vscode-cpptools/releases
--- dap.adapters.cppdbg = {
---   id = 'cppdbg',
---   type = 'executable',
---   command = '/absolute/path/to/cpptools/extension/debugAdapters/bin/OpenDebugAD7',
--- }
--- dap.configurations.cpp = {
---  {
---    name = "Launch file",
---    type = "cppdbg",
---    request = "launch",
---    program = function()
---      return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
---    end,
---    cwd = '${workspaceFolder}',
---    stopOnEntry = true,
---  },
---  {
---    name = 'Attach to gdbserver :1234',
---    type = 'cppdbg',
---    request = 'launch',
---    MIMode = 'gdb',
---    miDebuggerServerAddress = 'localhost:1234',
---    miDebuggerPath = '/usr/bin/gdb',
---    cwd = '${workspaceFolder}',
---    program = function()
---      return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
---    end,
---  },
--- }
--- if GDB has pretty-printing support, include following setting in each configurations
--- setupCommands = {
---   {
---      text = '-enable-pretty-printing',
---      description =  'enable pretty printing',
---      ignoreFailures = false
---   },
--- },
--- re using configurations for c and rust
--- dap.configurations.c = dap.configurations.cpp
--- }}}
-
---]]
---}}}
-
 -- Defaults {{{
 vim.opt.number = true                               -- show line numbers
 vim.opt.ruler = true
@@ -169,11 +55,8 @@ vim.cmd("autocmd TermOpen * setlocal nonumber norelativenumber" )  -- disable li
 require('packer').startup(function(use)
     -- Packer itself
     use 'wbthomason/packer.nvim'
-
     -- LSP and debugger {{{
-
-    use {'L3MON4D3/LuaSnip'}
-
+    use { 'L3MON4D3/LuaSnip' }
     use {
         'hrsh7th/nvim-cmp',
         requires = {
@@ -226,7 +109,7 @@ require('packer').startup(function(use)
                                     fallback()
                                 end
                             end, { "i", "s" }),
-                        ['<CR>'] = cmp.mapping.confirm({ select = true })
+                        ['<CR>'] = cmp.mapping.confirm({ select = false })
                         },
                   }
         end
@@ -239,10 +122,14 @@ require('packer').startup(function(use)
             capabilities = require('cmp_nvim_lsp').update_capabilities(capabilities)
             lspconfig.pyright.setup{capabilities=capabilities}
             lspconfig.gopls.setup{capabilities=capabilities}
-            lspconfig.clangd.setup{capabilities=capabilities}
+            lspconfig.clangd.setup{
+                capabilities = capabilities,
+                autostart = false,
+            }
             lspconfig.jsonls.setup{capabilities=capabilities}
             lspconfig.sumneko_lua.setup{
-                capabilities=capabilities,
+                capabilities = capabilities,
+                autostart = false,
                 settings = {
                     Lua = {
                       runtime = {
@@ -389,6 +276,46 @@ require('packer').startup(function(use)
         end
         }
 
+    use {
+        "darius4691/nvim-projectconfig",
+        config = function()
+            require("nvim-projectconfig").setup{}
+        end
+    }
+
+    -- tags auto generating
+    use {
+        "ludovicchabant/vim-gutentags",
+        requires = {'skywind3000/gutentags_plus'},
+        config = function()
+            vim.cmd[[
+                let g:gutentags_project_root = ['.root', '.svn', '.git', '.hg', '.project']
+                let g:gutentags_ctags_tagfile = '.tags'
+                let s:vim_tags = expand('~/.cache/tags')
+                let g:gutentags_cache_dir = s:vim_tags
+
+                let g:gutentags_modules = []
+                if executable('ctags')
+                    let g:gutentags_modules += ['ctags']
+                endif
+                if executable('gtags-cscope') && executable('gtags')
+                    let g:gutentags_modules += ['gtags_cscope']
+                endif
+                let g:gutentags_ctags_extra_args = ['--fields=+niazS', '--extra=+q']
+                let g:gutentags_ctags_extra_args += ['--c++-kinds=+px']
+                let g:gutentags_ctags_extra_args += ['--c-kinds=+px']
+                let g:gutentags_ctags_extra_args += ['--languages=C']
+                let g:gutentags_ctags_extra_args += ['--languages=+C++']
+                let g:gutentags_ctags_extra_args += ['--output-format=e-ctags']
+                let g:gutentags_plus_nomap = 1
+
+                if !isdirectory(s:vim_tags)
+                   silent! call mkdir(s:vim_tags, 'p')
+                endif
+            ]]
+        end
+    }
+
     -- formatting
     use {'sbdchd/neoformat'}
 
@@ -438,19 +365,34 @@ require('packer').startup(function(use)
             require('gitsigns').setup()
         end
     }
-
     -- telescope
     use {
         "nvim-telescope/telescope.nvim",
         requires = {
             "nvim-lua/popup.nvim",
             "nvim-lua/plenary.nvim",
-            "nvim-telescope/telescope-dap.nvim"
+            "nvim-telescope/telescope-dap.nvim",
+            "ahmedkhalf/project.nvim",
         },
         config = function()
+            require("project_nvim").setup {
+                manual_mode = true
+            }
             local ts = require("telescope")
-            ts.setup()
+            local actions = require "telescope.actions"
+            ts.setup {
+              pickers = {
+                buffers = {
+                  mappings = {
+                    i = {
+                      ["<c-d>"] = actions.delete_buffer,
+                    }
+                  }
+                }
+              }
+            }
             ts.load_extension('dap')
+            ts.load_extension('projects')
         end
     }
     -- }}}
@@ -468,9 +410,6 @@ require('packer').startup(function(use)
                 b = {ts.buffers, "Buffers"},
                 c = {
                     function()
-                        local file = vim.fn.findfile("cscope.out", ".;")
-                        vim.cmd("silent! cs add "..file)
-                        vim.fn.setqflist({})
                         vim.cmd("cs find c <cword>")
                         vim.cmd([[cclose]])
                         ts.quickfix()
@@ -482,12 +421,11 @@ require('packer').startup(function(use)
                     s = {te.extensions.dap.configuration, "Settings(cfg)"},
                     b = {te.extensions.dap.list_breakpoints, "BreakPoints"},
                     v = {te.extensions.dap.variables, "Variables"},
-                    f = {te.extensions.dap.frames, "Frames(stack)"}
+                    f = {te.extensions.dap.frames, "Frames(stack)"},
                 },
                 h = {ts.help_tags, "HelpTag"},
                 m = {ts.marks, "VimMarks"},
                 q = {ts.quickfix, "QuickFix"},
-                -- k = {require('lspsaga.hover').render_hover_doc, "HoverDoc"},
                 f = {function() ts.find_files{hidden=true} end, "OpenFile"},
                 p = {ts.diagnostics, "Diagnostics"},
                 r = {ts.lsp_references, "ListReferences"},
@@ -498,6 +436,7 @@ require('packer').startup(function(use)
                 D = {ts.lsp_document_symbols, "DocumentSymbol"},
                 M = {"<Cmd>TodoTelescope<Cr>", "TODOs"},
                 O = {dap.repl.open, "DapREPL"},
+                P = {"<Cmd>Telescope projects<Cr>", "Project"},
                 T = {vim.lsp.buf.formatting, "Formatting"},
                 ["."] = {ts.resume, "Resume"},
                 [":"] = {ts.commands, "Commands"},
