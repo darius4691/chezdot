@@ -393,6 +393,7 @@ require('packer').startup(function(use)
             "nvim-lua/plenary.nvim",
             "nvim-telescope/telescope-dap.nvim",
             "ahmedkhalf/project.nvim",
+            "nvim-telescope/telescope-file-browser.nvim"
         },
         config = function()
             require("project_nvim").setup {
@@ -413,6 +414,7 @@ require('packer').startup(function(use)
             }
             ts.load_extension('dap')
             ts.load_extension('projects')
+            ts.load_extension('file_browser')
         end
     }
     -- }}}
@@ -442,6 +444,14 @@ require('packer').startup(function(use)
                     b = {te.extensions.dap.list_breakpoints, "BreakPoints"},
                     v = {te.extensions.dap.variables, "Variables"},
                     f = {te.extensions.dap.frames, "Frames(stack)"},
+                    V = {function()
+                        local widgets = require('dap.ui.widgets')
+                        widgets.centered_float(widgets.scopes)
+                    end, "ScopeWidget"},
+                    F = {function()
+                        local widgets = require('dap.ui.widgets')
+                        widgets.centered_float(widgets.frames)
+                    end, "FrameWidget"},
                 },
                 h = {ts.help_tags, "HelpTag"},
                 m = {ts.marks, "VimMarks"},
@@ -454,13 +464,14 @@ require('packer').startup(function(use)
                 B = {dap.toggle_breakpoint, "DapBreak"},
                 C = {dap.continue, "DapContinue"},
                 D = {ts.lsp_document_symbols, "DocumentSymbol"},
+                F = {te.extensions.file_browser.file_browser, "FileBrowser"},
                 M = {"<Cmd>TodoTelescope<Cr>", "TODOs"},
                 O = {dap.repl.open, "DapREPL"},
-                P = {"<Cmd>Telescope projects<Cr>", "Project"},
+                P = {te.extensions.projects.projects, "Project"},
                 T = {vim.lsp.buf.formatting, "Formatting"},
                 ["."] = {ts.resume, "Resume"},
                 [":"] = {ts.commands, "Commands"},
-                ["]"] = {vim.diagnostic.goto_prev, "Next"},
+                ["]"] = {vim.diagnostic.goto_prev, "NextDiag"},
                 ["["] = {vim.diagnostic.goto_next, "PrevDiag"},
                 ["/"] = {ts.current_buffer_fuzzy_find, "FindCurrent"},
                 ["?"] = {ts.live_grep, "LiveGrep"},
