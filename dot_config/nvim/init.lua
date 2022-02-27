@@ -82,14 +82,12 @@ require('packer').startup(function(use)
                         luasnip.lsp_expand(args.body)
                     end
                 },
-                sources = cmp.config.sources({{
-                        {name = "nvim_lsp"},
-                        {name = "luasnip"},
-                    },{
-                        {name = "path"},
-                        {name = "buffer"},
-                        {name = "tags", max_item_count = 5}
-                    }
+                sources = cmp.config.sources({
+                    {name = "nvim_lsp"},
+                    {name = "luasnip"},
+                    {name = "path"},
+                    {name = "buffer"},
+                    {name = "tags", max_item_count = 5}
                 }),
                 mapping = {
                     ["<Tab>"] = cmp.mapping(
@@ -118,19 +116,12 @@ require('packer').startup(function(use)
                 },
             }
             cmp.setup.cmdline(':', {
-               sources = cmp.config.sources({
+                sources = cmp.config.sources({
                    { name = 'path' },
                    { name = 'buffer' }
-               }, {
+                }, {
                    { name = 'cmdline' }
-               })
-            })
-            cmp.setup.filetype("dap-repl", {
-               sources = cmp.config.sources({
-                   { name = 'buffer' }
-               }, {
-                   { name = 'tags' }
-               })
+                })
             })
         end
     }
@@ -149,7 +140,6 @@ require('packer').startup(function(use)
             lspconfig.jsonls.setup{capabilities=capabilities}
             lspconfig.sumneko_lua.setup{
                 capabilities = capabilities,
-                autostart = false,
                 settings = {
                     Lua = {
                         runtime = {
@@ -202,11 +192,17 @@ require('packer').startup(function(use)
     -- LSP and debugger}}}
 
     -- UI and theme {{{
-
-    use {'navarasu/onedark.nvim',
+    use {
+        'folke/tokyonight.nvim',
+        config = function()
+            vim.g.tokyonight_style = "night"
+        end
+    }
+    use {
+        'navarasu/onedark.nvim',
         config = function()
             vim.cmd[[
-            colorscheme onedark
+            colorscheme tokyonight
             highlight DapBreakpoint ctermbg=0 guifg=#993939 guibg=#31353f
             highlight DapLogPoint   ctermbg=0 guifg=#61afef guibg=#31353f
             highlight DapStopped    ctermbg=0 guifg=#98c379 guibg=#31353f
@@ -221,7 +217,7 @@ require('packer').startup(function(use)
         config = function()
             require('lualine').setup{
                 options = {
-                    theme = 'onedark',
+                    theme = 'tokyonight',
                     section_separators = {'', ''},
                     component_separators = {'', ''},
                     icons_enabled = true,
@@ -341,12 +337,19 @@ require('packer').startup(function(use)
 
     -- Treesitter and highlight
     use {
-        "nvim-treesitter/nvim-treesitter",
+        'nvim-treesitter/nvim-treesitter',
+        requires = {
+            'p00f/nvim-ts-rainbow',
+            'nvim-treesitter/nvim-treesitter-refactor'
+        },
         run = ':TSUpdate',
         config = function()
             require'nvim-treesitter.configs'.setup{
                 ensure_installed = {"python", "go", "json", "bash", "lua", "c", "cpp"},
-                highlight = {enable = true},
+                highlight = {
+                    enable = true,
+                    additional_vim_regex_highlighting = false,
+                },
                 incremental_selection = {
                     enable = true,
                     keymaps = {
@@ -360,6 +363,14 @@ require('packer').startup(function(use)
                     highlight_definitions = {enable = true},
                     highlight_current_scope = {enable = true},
                 },
+                rainbow = {
+                  enable = true,
+                  -- disable = { "jsx", "cpp" }, list of languages you want to disable the plugin for
+                  extended_mode = true, -- Also highlight non-bracket delimiters like html tags, boolean or table: lang -> boolean
+                  max_file_lines = 10000, -- Do not enable for files with more than n lines, int
+                  -- colors = {}, -- table of hex strings
+                  -- termcolors = {} -- table of colour name strings
+                }
             }
         end
     }
