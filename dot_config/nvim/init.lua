@@ -18,36 +18,36 @@ vim.opt.expandtab = true
 vim.opt.autoindent = true                           -- indent when moving to the next line while writing code
 vim.opt.cursorline = true                           -- shows line under the cursor's line
 vim.opt.showmatch = true                            -- shows matching part of bracket pairs (), [], {}
-vim.opt.enc = "utf-8"                               -- utf-8 by default
-vim.opt.backspace = "indent,eol,start"              -- backspace removes all (indents, EOLs, start) What is start?
+vim.opt.enc = 'utf-8'                               -- utf-8 by default
+vim.opt.backspace = 'indent,eol,start'              -- backspace removes all (indents, EOLs, start) What is start?
 vim.opt.scrolloff = 10                              -- let 10 lines before/after cursor during scroll
-vim.opt.clipboard = "unnamedplus"                   -- use system clipboard
+vim.opt.clipboard = 'unnamedplus'                   -- use system clipboard
 vim.opt.hidden = true                               -- textEdit might fail if hidden is not set.
 vim.opt.backup = false                              -- some servers have issues with backup files, see #649.
 vim.opt.writebackup = false
 vim.opt.cmdheight = 2                               -- give more space for displaying messages.
 vim.opt.updatetime = 300                            -- reduce updatetime (default is 4000 ms = 4 s) leads to noticeable
-vim.opt.iskeyword:append{"-"}                       -- treat dash separated words as a word text object"
-vim.opt.signcolumn = "yes"                          -- Always show the signcolumn, otherwise it would shift the text each time diagnostics appear/become resolved.
+vim.opt.iskeyword:append{'-'}                       -- treat dash separated words as a word text object"
+vim.opt.signcolumn = 'yes'                          -- Always show the signcolumn, otherwise it would shift the text each time diagnostics appear/become resolved.
 vim.opt.showmode = false                            -- compatible with lightline
 vim.opt.showtabline = 2                             -- show tab line always
 vim.opt.list = true                                 -- show invisible characters
-vim.opt.listchars = "tab:>-,trail:~"                -- list symbols, extends,precedes are useless if warp is on
+vim.opt.listchars = 'tab:>-,trail:~'                -- list symbols, extends,precedes are useless if warp is on
 vim.opt.foldnestmax = 1                             -- only fold top level
-vim.opt.foldmethod = "syntax"                       -- fold by syntax
+vim.opt.foldmethod = 'syntax'                       -- fold by syntax
 
 vim.opt.termguicolors = true                        -- enable true color
-vim.opt.completeopt = "menu,menuone,noselect"       -- completion menu options
+vim.opt.completeopt = 'menu,menuone,noselect'       -- completion menu options
 vim.opt.pumheight = 7                               -- limit the completion menu height
 
-vim.opt.cscopequickfix = "s-,c-,d-,i-,t-,e-,a-"
+vim.opt.cscopequickfix = 's-,c-,d-,i-,t-,e-,a-'
 vim.opt.cscopeverbose = false
 
-vim.api.nvim_set_var("loaded_python_provider", 0)   -- disable python2 support
+vim.api.nvim_set_var('loaded_python_provider', 0)   -- disable python2 support
 vim.api.nvim_set_keymap('t', '<Esc>', '<C-\\><C-n>', {noremap = true})
-vim.cmd("syntax enable")                            -- syntax highlight
-vim.cmd("autocmd FileType make set noexpandtab")    --change space back to tab
-vim.cmd("autocmd TermOpen * setlocal nonumber norelativenumber" )  -- disable line number in terminal mode
+vim.cmd('syntax enable')                            -- syntax highlight
+vim.cmd('autocmd FileType make set noexpandtab')    --change space back to tab
+vim.cmd('autocmd TermOpen * setlocal nonumber norelativenumber' )  -- disable line number in terminal mode
 
 --: }}}
 
@@ -63,55 +63,75 @@ require('packer').startup(function(use)
             'hrsh7th/cmp-path',
             'hrsh7th/cmp-buffer',
             'hrsh7th/cmp-nvim-lsp',
+            'hrsh7th/cmp-path',
+            'hrsh7th/cmp-cmdline',
             'quangnguyen30192/cmp-nvim-tags',
             'saadparwaiz1/cmp_luasnip'
         },
         config = function()
-                local has_words_before = function()
-                    local line, col = unpack(vim.api.nvim_win_get_cursor(0))
-                    return col ~= 0 and vim.api.nvim_buf_get_lines(0, line - 1, line, true)[1]:sub(col, col):match("%s") == nil
-                end
+            local has_words_before = function()
+                local line, col = unpack(vim.api.nvim_win_get_cursor(0))
+                return col ~= 0 and vim.api.nvim_buf_get_lines(0, line - 1, line, true)[1]:sub(col, col):match("%s") == nil
+            end
 
-                local luasnip = require("luasnip")
-                local cmp = require("cmp")
-                cmp.setup{
-                    snippet = {
-                        expand = function(args)
-                            luasnip.lsp_expand(args.body)
-                        end
-                    },
-                    sources = cmp.config.sources({
+            local luasnip = require("luasnip")
+            local cmp = require("cmp")
+            cmp.setup{
+                snippet = {
+                    expand = function(args)
+                        luasnip.lsp_expand(args.body)
+                    end
+                },
+                sources = cmp.config.sources({{
                         {name = "nvim_lsp"},
                         {name = "luasnip"},
+                    },{
+                        {name = "path"},
                         {name = "buffer"},
                         {name = "tags", max_item_count = 5}
-                    }),
-                    mapping = {
-                        ["<Tab>"] = cmp.mapping(
-                            function(fallback)
-                                if cmp.visible() then
-                                    cmp.select_next_item()
-                                elseif luasnip.expand_or_jumpable() then
-                                    luasnip.expand_or_jump()
-                                elseif has_words_before() then
-                                    cmp.complete()
-                                else
-                                    fallback()
-                                end
-                            end, { "i", "s" }),
-                        ["<S-Tab>"] = cmp.mapping(
-                            function(fallback)
-                                if cmp.visible() then
-                                    cmp.select_prev_item()
-                                elseif luasnip.jumpable(-1) then
-                                    luasnip.jump(-1)
-                                else
-                                    fallback()
-                                end
-                            end, { "i", "s" }),
-                        ['<CR>'] = cmp.mapping.confirm({ select = false })
-                        },
-                  }
+                    }
+                }),
+                mapping = {
+                    ["<Tab>"] = cmp.mapping(
+                        function(fallback)
+                            if cmp.visible() then
+                                cmp.select_next_item()
+                            elseif luasnip.expand_or_jumpable() then
+                                luasnip.expand_or_jump()
+                            elseif has_words_before() then
+                                cmp.complete()
+                            else
+                                fallback()
+                            end
+                        end, { "i", "s" }),
+                    ["<S-Tab>"] = cmp.mapping(
+                        function(fallback)
+                            if cmp.visible() then
+                                cmp.select_prev_item()
+                            elseif luasnip.jumpable(-1) then
+                                luasnip.jump(-1)
+                            else
+                                fallback()
+                            end
+                        end, { "i", "s" }),
+                    ['<CR>'] = cmp.mapping.confirm({ select = false })
+                },
+            }
+            cmp.setup.cmdline(':', {
+               sources = cmp.config.sources({
+                   { name = 'path' },
+                   { name = 'buffer' }
+               }, {
+                   { name = 'cmdline' }
+               })
+            })
+            cmp.setup.filetype("dap-repl", {
+               sources = cmp.config.sources({
+                   { name = 'buffer' }
+               }, {
+                   { name = 'tags' }
+               })
+            })
         end
     }
 
@@ -132,24 +152,24 @@ require('packer').startup(function(use)
                 autostart = false,
                 settings = {
                     Lua = {
-                      runtime = {
-                        -- Tell the language server which version of Lua you're using (most likely LuaJIT in the case of Neovim)
-                        version = 'LuaJIT',
-                      },
-                      diagnostics = {
-                        -- Get the language server to recognize the `vim` global
-                        globals = {'vim'},
-                      },
-                      workspace = {
-                        -- Make the server aware of Neovim runtime files
-                        library = vim.api.nvim_get_runtime_file("", true),
-                      },
-                      -- Do not send telemetry data containing a randomized but unique identifier
-                      telemetry = {
-                        enable = false,
-                      },
+                        runtime = {
+                          -- Tell the language server which version of Lua you're using (most likely LuaJIT in the case of Neovim)
+                          version = 'LuaJIT',
+                        },
+                        diagnostics = {
+                          -- Get the language server to recognize the `vim` global
+                          globals = {'vim'},
+                        },
+                        workspace = {
+                          -- Make the server aware of Neovim runtime files
+                          library = vim.api.nvim_get_runtime_file("", true),
+                        },
+                        -- Do not send telemetry data containing a randomized but unique identifier
+                        telemetry = {
+                          enable = false,
+                        },
                     },
-                  }
+                }
             }
         end
     }
