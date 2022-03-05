@@ -117,10 +117,10 @@ require('packer').startup(function(use)
             }
             cmp.setup.cmdline(':', {
                 sources = cmp.config.sources({
+                   { name = 'cmdline' }
+                }, {
                    { name = 'path' },
                    { name = 'buffer' }
-                }, {
-                   { name = 'cmdline' }
                 })
             })
         end
@@ -490,16 +490,22 @@ require('packer').startup(function(use)
                 ["2"] = {function() bl.go_to_buffer(2) end, "which_key_ignore"},
                 ["3"] = {function() bl.go_to_buffer(3) end, "which_key_ignore"},
                 ["4"] = {function() bl.go_to_buffer(4) end, "which_key_ignore"},
-                ["5"] = {function() bl.go_to_buffer(5) end, "which_key_ignore"},
-                ["6"] = {function() bl.go_to_buffer(6) end, "which_key_ignore"},
-                ["7"] = {function() bl.go_to_buffer(7) end, "which_key_ignore"},
-                ["8"] = {function() bl.go_to_buffer(8) end, "which_key_ignore"},
-                ["9"] = {function() bl.go_to_buffer(9) end, "which_key_ignore"},
+                    ["5"] = {function() bl.go_to_buffer(5) end, "which_key_ignore"},
+                    ["6"] = {function() bl.go_to_buffer(6) end, "which_key_ignore"},
+                    ["7"] = {function() bl.go_to_buffer(7) end, "which_key_ignore"},
+                    ["8"] = {function() bl.go_to_buffer(8) end, "which_key_ignore"},
+                    ["9"] = {function() bl.go_to_buffer(9) end, "which_key_ignore"},
                 }, {prefix="<space>"})
             wk.register({g={
                 d={ts.lsp_definitions, "GoToDef"},
                 D={ts.lsp_type_definitions, "GoToTypeDef"},
             }})
+            -- which-key hijacked telescope C-r paste buffer command
+            vim.api.nvim_exec([[
+                augroup telescope
+                    autocmd!
+                    autocmd FileType TelescopePrompt inoremap <buffer> <silent> <C-r> <C-r>
+                augroup END]], false)
       end
     }
     -- }}}
