@@ -59,7 +59,17 @@
     pinentry_mac # used for poping up password entering frame
     #nyxt
     ];
-  environment.variables.EDITOR = "nvim";
+  environment.variables = rec {
+    EDITOR = "nvim";
+    XDG_CACHE_HOME  = "\${HOME}/.cache";
+    XDG_CONFIG_HOME = "\${HOME}/.config";
+    XDG_BIN_HOME    = "\${HOME}/.local/bin";
+    XDG_DATA_HOME   = "\${HOME}/.local/share";
+    ZDOTDIR = "\${XDG_CONFIG_HOME}/zsh";
+    PATH = [
+      "\${XDG_BIN_HOME}:\${PATH}"
+    ];
+  };
   nixpkgs.overlays = [
     (import (builtins.fetchTarball https://github.com/nix-community/emacs-overlay/archive/master.tar.gz))
     (self: super: {
