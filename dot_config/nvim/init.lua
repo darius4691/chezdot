@@ -188,10 +188,22 @@ require('packer').startup(function(use)
             )
         end
     }
+    use {
+        'mfussenegger/nvim-lint',
+        config = function()
+            require('lint').linters_by_ft = {
+              cpp = {'cppcheck'},
+              c = {'cppcheck'}
+            }
+            vim.cmd[[au BufWritePost <buffer> lua require('lint').try_lint()]]
+        end
+    }
 
     -- LSP and debugger}}}
-
     -- UI and theme {{{
+    -- nix highlight
+    use 'LnL7/vim-nix'
+
     use {
         'folke/tokyonight.nvim',
         config = function()
@@ -254,7 +266,6 @@ require('packer').startup(function(use)
         end
     }
     --- }}}
-
     -- tools {{{
     -- enable directory-based config files
     use {
@@ -302,7 +313,7 @@ require('packer').startup(function(use)
     -- tags auto generating
     use {
         "ludovicchabant/vim-gutentags",
-        requires = {'skywind3000/gutentags_plus'},
+        requires = {'darius4691/gutentags_plus'},
         config = function()
             vim.cmd[[
                 let g:gutentags_project_root = ['.root', '.svn', '.git', '.hg', '.project']
@@ -345,7 +356,9 @@ require('packer').startup(function(use)
         run = ':TSUpdate',
         config = function()
             require'nvim-treesitter.configs'.setup{
-                ensure_installed = {"python", "go", "json", "bash", "lua", "c", "cpp"},
+                ensure_installed = {
+                    "python", "go", "json", "bash", "lua", "c", "cpp",
+                },
                 highlight = {
                     enable = true,
                     additional_vim_regex_highlighting = false,
@@ -374,6 +387,8 @@ require('packer').startup(function(use)
             }
         end
     }
+
+    use {"seandewar/killersheep.nvim"}
 
     -- debug virtual text
     use {
@@ -429,7 +444,6 @@ require('packer').startup(function(use)
         end
     }
     -- }}}
-
     -- Key Mappings {{{
     use {
         "folke/which-key.nvim",
