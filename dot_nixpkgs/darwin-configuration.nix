@@ -8,7 +8,7 @@
     [
     neovim tmux
     # required by neovim and common tools
-    direnv
+    direnv starship
     luajit sumneko-lua-language-server
     shellcheck aspell
     # COMMANDLINE TOOLS
@@ -48,6 +48,7 @@
       "\${XDG_BIN_HOME}:\${PATH}"
     ];
   };
+  environment.pathsToLink = [ "/share/zsh" ];
   nixpkgs.overlays = [
     (self: super: {
       neovim = super.neovim.override {
@@ -74,15 +75,63 @@
   };
 
   # Create /etc/bashrc that loads the nix-darwin environment.
-  programs.zsh.enable = true;
+  programs.zsh = {
+    enable = true;
+    enableFzfHistory = true;
+    enableFzfCompletion = true;
+  };
+  # programs.starship = {
+  #   enable = true;
+  #   settings = {
+  #     character = {
+  #       success_symbol = "[🍀](bold green)";
+  #       error_symbol = "[🍀](bold red)";
+  #     };
+  #   };
+  # };
   users.users.darius = {
     name = "darius";
     home = "/Users/darius";
   };
   home-manager.users.darius = { pkgs, ... }: {
-    programs.gpg = {
-      
+    programs.zsh = {
+      enable = true;
+      dotDir = ".config/zsh";
+      autocd = true;
+      enableCompletion = true;
+      enableAutosuggestions = true;
+      enableSyntaxHighlighting = true;
+      sessionVariables = {
+        CONDARC = "\${XDG_CONFIG_HOME}/conda/condarc";
+        HOMEBREW_BREW_GIT_REMOTE = "https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/brew.git";
+        HOMEBREW_CORE_GIT_REMOTE = "https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/homebrew-core.git";
+        NIX_PATH = "\${HOME}/.nix-defexpr/channels\${NIX_PATH:+:}\${NIX_PATH}";
+        GO111MODULE = "on";
+        GOPATH = "\${HOME}/.local/share/go";
+      };
+      shellAliases = {
+        ll = "exa -al";
+        la = "exa -a";
+        ls = "exa";
+        du = "ncdu";
+        top = "htop";
+        ".." = "cd ..";
+      };
+      initExtra = ''
+        if [[ $TERM != "dumb" && (-z $INSIDE_EMACS || $INSIDE_EMACS == "vterm") ]]; then
+          eval "$(${pkgs.starship}/bin/starship init zsh)"
+        fi
+        eval "$(${pkgs.direnv}/bin/direnv hook zsh)"
+      '';
     };
+    #programs.gpg = {
+    #  settings = {
+    #    keyid-format = "0xlong";
+    #    with-fingerprint = true;
+    #    with-keygrip = true;
+    #    expert = true;
+    #  }
+    #};
     #programs.gnupg.agent = {
     #    enable = true;
     #    enableSSHSupport = true;
@@ -97,25 +146,25 @@
     #    '';
     #    pinentryFlavor = "curses";
     #};
-    programs.fish = {
-      enable = true;
-      shellAliases = {
-        ll = "exa -al";
-        la = "exa -a";
-        ls = "exa";
-        du = "ncdu";
-        top = "htop";
-        ".." = "cd ..";
-      };
-      shellInit = ''
-        set -x SHELL /bin/bash
-        direnv hook fish | source
-        set -e SSH_AGENT_PID
-        set -gx SSH_AUTH_SOCK (gpgconf --list-dirs agent-ssh-socket)
-        set -gx GPG_TTY (tty)
-        gpg-connect-agent updatestartuptty /bye >/dev/null
-      '';
-    };
+    #programs.fish = {
+    #  enable = true;
+    #  shellAliases = {
+    #    ll = "exa -al";
+    #    la = "exa -a";
+    #    ls = "exa";
+    #    du = "ncdu";
+    #    top = "htop";
+    #    ".." = "cd ..";
+    #  };
+    #  shellInit = ''
+    #    set -x SHELL /bin/bash
+    #    direnv hook fish | source
+    #    set -e SSH_AGENT_PID
+    #    set -gx SSH_AUTH_SOCK (gpgconf --list-dirs agent-ssh-socket)
+    #    set -gx GPG_TTY (tty)
+    #    gpg-connect-agent updatestartuptty /bye >/dev/null
+    #  '';
+    #};
   };
   # Used for backwards compatibility, please read the changelog before changing.
   # $ darwin-rebuild changelog
