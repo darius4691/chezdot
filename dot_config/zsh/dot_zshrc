@@ -68,18 +68,9 @@ if [ -x "$(command -v exa)" ]; then
 fi
 test -x "$(command -v htop)" && alias top="htop"
 test -x "$(command -v ncdu)" && alias du="ncdu"
-test -x "$(command -v nvim)" && alias vi="nvim"
 
-#nix shell for make
-if [ -x "$(command -v nix-shell)" ]; then
-    function make() {
-        if [ -f ./shell.nix ]; then
-            nix-shell --run "make $@"
-        else
-            make "$@"
-        fi
-    }
-fi
+#direnv
+test -x "$(command -v direnv)" && eval "$(direnv hook zsh)"
 
 # fzf compatibility
 if [ -n "${commands[fzf-share]}" ]; then

@@ -39,16 +39,16 @@
 
 (require 'pyim)
 (require 'pyim-basedict)
-;;(require 'pyim-greatdict) ; 拼音词库设置，五笔用户 *不需要* 此行设置
-;(pyim-basedict-enable)   ; 拼音词库，五笔用户 *不需要* 此行设置
 (pyim-basedict-enable)
-;;(pyim-greatdict-enable)   ; 拼音词库，五笔用户 *不需要* 此行设置
+(setq pyim-page-tooltip 'posframe)
 (setq pyim-punctuation-translate-p '(no auto yes)) ;全角半角问题
 (setq pyim-punctuation-dict nil) ;全角半角问题
 (setq default-input-method "pyim")
 (pyim-default-scheme 'xiaohe-shuangpin)
+
 (setq dash-docs-enable-debugging nil)
 (setq dash-docs-browser-func 'eww)
+
 (if (file-exists-p "/bin/fish") (setq vterm-shell "/bin/fish") (setq vterm-shell "/bin/fish"))
 
 
