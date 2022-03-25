@@ -12,7 +12,7 @@
     luajit sumneko-lua-language-server
     shellcheck aspell
     # COMMANDLINE TOOLS
-    fd ripgrep bat exa fzf
+    fd ripgrep bat exa fzf zoxide
     wget tree jq perl rename
     gitFull git-lfs
     #delta
@@ -75,20 +75,11 @@
   };
 
   # Create /etc/bashrc that loads the nix-darwin environment.
-  programs.zsh = {
+  programs.zsh.enable = true;
+  programs.gnupg.agent = {
     enable = true;
-    enableFzfHistory = true;
-    enableFzfCompletion = true;
+    enableSSHSupport = true;
   };
-  # programs.starship = {
-  #   enable = true;
-  #   settings = {
-  #     character = {
-  #       success_symbol = "[🍀](bold green)";
-  #       error_symbol = "[🍀](bold red)";
-  #     };
-  #   };
-  # };
   users.users.darius = {
     name = "darius";
     home = "/Users/darius";
@@ -117,13 +108,41 @@
         top = "htop";
         ".." = "cd ..";
       };
-      initExtra = ''
-        if [[ $TERM != "dumb" && (-z $INSIDE_EMACS || $INSIDE_EMACS == "vterm") ]]; then
-          eval "$(${pkgs.starship}/bin/starship init zsh)"
-        fi
-        eval "$(${pkgs.direnv}/bin/direnv hook zsh)"
-      '';
+      prezto = {
+        enable = true;
+        pmodules = [
+          "environment"
+          "terminal"
+          "editor"
+          "history"
+          "directory"
+          "spectrum"
+          "utility"
+          "completion"
+          "syntax-highlighting"
+          "history-substring-search"
+        ];
+      };
     };
+    programs.fzf = {
+      enable = true;
+      defaultCommand = "fd --type f";
+      fileWidgetOptions = [
+        "--preview"
+        "'bat --style=numbers --color=always {} | head -200'"
+      ];
+    };
+    programs.zoxide.enable = true;
+    programs.starship = {
+      enable = true;
+      settings = {
+        character = {
+          success_symbol = "[🍀](bold green)";
+          error_symbol = "[🍀](bold red)";
+        };
+      };
+    };
+    programs.direnv.enable = true;
     #programs.gpg = {
     #  settings = {
     #    keyid-format = "0xlong";
