@@ -35,6 +35,7 @@
     w3m
     pinentry_mac # used for poping up password entering frame
     figlet
+    chezmoi
     #nyxt
     ];
   environment.variables = rec {
@@ -99,30 +100,27 @@
         NIX_PATH = "\${HOME}/.nix-defexpr/channels\${NIX_PATH:+:}\${NIX_PATH}";
         GO111MODULE = "on";
         GOPATH = "\${HOME}/.local/share/go";
+        MANPAGER = "sh -c 'col -bx | ${pkgs.bat}/bin/bat -l man -p'";
       };
       shellAliases = {
-        ll = "exa -al";
-        la = "exa -a";
-        ls = "exa";
-        du = "ncdu";
-        top = "htop";
+        ll = "${pkgs.exa}/bin/exa -al";
+        la = "${pkgs.exa}/bin/exa -a";
+        ls = "${pkgs.exa}/bin/exa";
+        du = "${pkgs.ncdu}/bin/ncdu";
+        top = "${pkgs.htop}/bin/htop";
         ".." = "cd ..";
+        cat="${pkgs.bat}/bin/bat --paging=never";
       };
-      prezto = {
-        enable = true;
-        pmodules = [
-          "environment"
-          "terminal"
-          "editor"
-          "history"
-          "directory"
-          "spectrum"
-          "utility"
-          "completion"
-          "syntax-highlighting"
-          "history-substring-search"
-        ];
-      };
+      plugins = [
+        {
+          name = "fzf-tab";
+          src = "${pkgs.zsh-fzf-tab}/share/fzf-tab";
+        }
+      ];
+      initExtra = ''
+        zstyle ':completion:*:descriptions' format '%d'
+        zstyle ':fzf-tab:*' group-colors '''
+      '';
     };
     programs.fzf = {
       enable = true;
@@ -143,14 +141,15 @@
       };
     };
     programs.direnv.enable = true;
-    #programs.gpg = {
-    #  settings = {
-    #    keyid-format = "0xlong";
-    #    with-fingerprint = true;
-    #    with-keygrip = true;
-    #    expert = true;
-    #  }
-    #};
+    programs.gpg = {
+      enable = true;
+      settings = {
+        keyid-format = "0xlong";
+        with-fingerprint = true;
+        with-keygrip = true;
+        expert = true;
+      };
+    };
     #programs.gnupg.agent = {
     #    enable = true;
     #    enableSSHSupport = true;

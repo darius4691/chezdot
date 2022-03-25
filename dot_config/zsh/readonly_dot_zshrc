@@ -16,12 +16,14 @@ HELPDIR="/nix/store/axyjlzb9rd4kmc452jaq4sjb5da7iljs-zsh-5.8.1/share/zsh/$ZSH_VE
 
 
 
+path+="$HOME/.config/zsh/plugins/fzf-tab"
+fpath+="$HOME/.config/zsh/plugins/fzf-tab"
 
 
 # Oh-My-Zsh/Prezto calls compinit during initialization,
 # calling it twice causes slight start up slowdown
 # as all $fpath entries will be traversed again.
-
+autoload -U compinit && compinit
 
 source /nix/store/wrxpkqjsarw95bc4dhgnlqah4zj0r84l-zsh-autosuggestions-0.7.0/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 
@@ -29,21 +31,11 @@ source /nix/store/vvdnc4ygccnsl1zp2lsv45bngyjjdm5w-zsh-syntax-highlighting-0.7.1
 
 
 
-#
-# Executes commands at the start of an interactive session.
-#
-# Authors:
-#   Sorin Ionescu <sorin.ionescu@gmail.com>
-#
 
-# Source Prezto.
-if [[ -s "/nix/store/3xl1j5q5bxx6dkmk0dpfkk8h4dsj8z49-zsh-prezto-unstable-2021-11-16/share/zsh-prezto/init.zsh" ]]; then
-  source "/nix/store/3xl1j5q5bxx6dkmk0dpfkk8h4dsj8z49-zsh-prezto-unstable-2021-11-16/share/zsh-prezto/init.zsh"
+
+if [[ -f "$HOME/.config/zsh/plugins/fzf-tab/fzf-tab.plugin.zsh" ]]; then
+  source "$HOME/.config/zsh/plugins/fzf-tab/fzf-tab.plugin.zsh"
 fi
-
-# Customize to your needs...
-
-
 
 
 # History options should be set in .zshrc and after oh-my-zsh sourcing.
@@ -75,14 +67,18 @@ fi
 
 eval "$(/nix/store/15p8v3gbvmhlpqwrshqgzzr7hx66igrn-direnv-2.30.3/bin/direnv hook zsh)"
 
+zstyle ':completion:*:descriptions' format '%d'
+zstyle ':fzf-tab:*' group-colors ''
+
 
 # Aliases
 alias ..='cd ..'
-alias du='ncdu'
-alias la='exa -a'
-alias ll='exa -al'
-alias ls='exa'
-alias top='htop'
+alias cat='/nix/store/gg51z1phnbpqg8x8yylqsa66g8h00cfv-bat-0.20.0/bin/bat --paging=never'
+alias du='/nix/store/v1hjrm7jmz65pmmg20s5bcxcj2h2y6br-ncdu-1.16/bin/ncdu'
+alias la='/nix/store/gy0bqcs9mcan8af47wakdylhal67dpy4-exa-0.10.1/bin/exa -a'
+alias ll='/nix/store/gy0bqcs9mcan8af47wakdylhal67dpy4-exa-0.10.1/bin/exa -al'
+alias ls='/nix/store/gy0bqcs9mcan8af47wakdylhal67dpy4-exa-0.10.1/bin/exa'
+alias top='/nix/store/4mzawc017lj81daasjh8gvqp6vibbj5i-htop-3.1.2/bin/htop'
 
 # Global Aliases
 
