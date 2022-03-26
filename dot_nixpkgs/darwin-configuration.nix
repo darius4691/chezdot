@@ -4,6 +4,7 @@
   imports = [ <home-manager/nix-darwin> ];
   # List packages installed in system profile. To search by name, run:
   # $ nix-env -qaP | grep wget
+  #systemPackages{{{
   environment.systemPackages = with pkgs;
     [
     neovim tmux
@@ -14,7 +15,7 @@
     # COMMANDLINE TOOLS
     fd ripgrep bat exa fzf zoxide
     wget tree jq perl rename
-    gitFull git-lfs
+    gitFull git-lfs httpie ranger
     #delta
     #SYSTEM TOOLS
     gnupg ncdu procs
@@ -36,8 +37,10 @@
     pinentry_mac # used for poping up password entering frame
     figlet
     chezmoi
+    tealdeer
     #nyxt
     ];
+  #}}}
   environment.variables = rec {
     EDITOR = "nvim";
     XDG_CACHE_HOME  = "\${HOME}/.cache";
@@ -119,7 +122,8 @@
       ];
       initExtra = ''
         zstyle ':completion:*:descriptions' format '%d'
-        zstyle ':fzf-tab:*' group-colors '''
+        zstyle ':fzf-tab:complete:cd:*' fzf-preview 'exa -1 --color=always $realpath'
+        test -f $ZDOTDIR/local.zsh  && source $ZDOTDIR/local.zsh
       '';
     };
     programs.fzf = {
@@ -156,32 +160,7 @@
     #    sshKeys = [
     #      "D951C57386EE4E7B5A39CED1CFA87B1233770B0A"
     #    ];
-    #    extraConfig = ''
-    #      keyid-format 0xlong
-    #      with-fingerprint
-    #      with-keygrip
-    #      expert
-    #    '';
     #    pinentryFlavor = "curses";
-    #};
-    #programs.fish = {
-    #  enable = true;
-    #  shellAliases = {
-    #    ll = "exa -al";
-    #    la = "exa -a";
-    #    ls = "exa";
-    #    du = "ncdu";
-    #    top = "htop";
-    #    ".." = "cd ..";
-    #  };
-    #  shellInit = ''
-    #    set -x SHELL /bin/bash
-    #    direnv hook fish | source
-    #    set -e SSH_AGENT_PID
-    #    set -gx SSH_AUTH_SOCK (gpgconf --list-dirs agent-ssh-socket)
-    #    set -gx GPG_TTY (tty)
-    #    gpg-connect-agent updatestartuptty /bye >/dev/null
-    #  '';
     #};
   };
   # Used for backwards compatibility, please read the changelog before changing.
