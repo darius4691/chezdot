@@ -39,6 +39,8 @@ vim.opt.foldmethod = 'syntax'                       -- fold by syntax
 vim.opt.termguicolors = true                        -- enable true color
 vim.opt.completeopt = 'menu,menuone,noselect'       -- completion menu options
 vim.opt.pumheight = 7                               -- limit the completion menu height
+vim.opt.grepprg = "rg --vimgrep --no-heading --smart-case"
+vim.opt.helplang = "cn,en"
 
 vim.opt.cscopequickfix = 's-,c-,d-,i-,t-,e-,a-'
 vim.opt.cscopeverbose = false
@@ -46,7 +48,7 @@ vim.opt.cscopeverbose = false
 vim.api.nvim_set_var('loaded_python_provider', 0)   -- disable python2 support
 vim.api.nvim_set_keymap('t', '<Esc>', '<C-\\><C-n>', {noremap = true})
 vim.cmd('syntax enable')                            -- syntax highlight
-vim.cmd('autocmd FileType make set noexpandtab')    --change space back to tab
+vim.cmd('autocmd FileType make setlocal noexpandtab')    --change space back to tab
 vim.cmd('autocmd TermOpen * setlocal nonumber norelativenumber' )  -- disable line number in terminal mode
 
 --: }}}
@@ -195,7 +197,6 @@ require('packer').startup(function(use)
               cpp = {'cppcheck'},
               c = {'cppcheck'}
             }
-            vim.cmd[[au BufWritePost <buffer> lua require('lint').try_lint()]]
         end
     }
 
@@ -229,33 +230,12 @@ require('packer').startup(function(use)
         config = function()
             require('lualine').setup{
                 options = {
-                    theme = 'tokyonight',
-                    section_separators = {'', ''},
-                    component_separators = {'', ''},
-                    icons_enabled = true,
+                    component_separators = {},
+                    section_separators = {},
                 },
-                sections = {
-                    lualine_a = {{'mode', upper = true}},
-                    lualine_b = {{'branch', icon = ''}},
-                    lualine_c = {
-                        {'filename', file_status = true},
-                        {'diagnostics', sources = {"nvim_lsp"}},
-                    },
-                    lualine_x = {'encoding', 'fileformat', 'filetype'},
-                    lualine_y = {'progress'},
-                    lualine_z = {'location'},
-                },
-                inactive_sections = {
-                    lualine_a = {},
-                    lualine_b = {},
-                    lualine_c = {'filename'},
-                    lualine_x = {'location'},
-                    lualine_y = {},
-                    lualine_z = {}
-                },
-                extensions = {'fugitive'}
-        }
-    end
+                extensions = {'fugitive', 'quickfix'}
+            }
+        end
     }
     -- bufferline
     use {
@@ -315,36 +295,34 @@ require('packer').startup(function(use)
         "ludovicchabant/vim-gutentags",
         requires = {'darius4691/gutentags_plus'},
         config = function()
-            vim.cmd[[
-                let g:gutentags_project_root = ['.root', '.svn', '.git', '.hg', '.project']
-                let g:gutentags_ctags_tagfile = '.tags'
-                let s:vim_tags = expand('~/.cache/tags')
-                let g:gutentags_cache_dir = s:vim_tags
-
-                let g:gutentags_modules = []
-                if executable('ctags')
-                    let g:gutentags_modules += ['ctags']
-                endif
-                if executable('gtags-cscope') && executable('gtags')
-                    let g:gutentags_modules += ['gtags_cscope']
-                endif
-                let g:gutentags_ctags_extra_args = ['--fields=+niazS', '--extra=+q']
-                let g:gutentags_ctags_extra_args += ['--c++-kinds=+px']
-                let g:gutentags_ctags_extra_args += ['--c-kinds=+px']
-                let g:gutentags_ctags_extra_args += ['--languages=C']
-                let g:gutentags_ctags_extra_args += ['--languages=+C++']
-                let g:gutentags_ctags_extra_args += ['--output-format=e-ctags']
-                let g:gutentags_plus_nomap = 1
-
-                if !isdirectory(s:vim_tags)
-                   silent! call mkdir(s:vim_tags, 'p')
-                endif
-            ]]
+            local set_var_list = function(var_pairs)
+                for k, v in pairs(var_pairs) do
+                    vim.api.nvim_set_var(k, v)
+                end
+            end
+            local tag_cache_dir = vim.fn.stdpath('cache') .. '/tags'
+            if not vim.fn.isdirectory(tag_cache_dir) then
+                vim.fn.mkdir(tag_cache_dir, 'p')
+            end
+            set_var_list({
+                gutentags_project_root = {
+                    '.root', '.svn', '.git', '.hg', '.project'
+                },
+                gutentags_ctags_tagfile = '.tags',
+                gutentags_cache_dir = tag_cache_dir,
+                gutentags_ctags_extra_args = {
+                    '--fields=+niazS',
+                    '--extras=+fq',
+                    '--kinds-C=+px',
+                    '--kinds-C++=+px',
+                    '--output-format=e-ctags'
+                },
+                gutentags_modules = { 'ctags', 'gtags_cscope' },
+                gutentags_plus_nomap = 1,
+                gutentags_define_advanced_commands = 1;
+            })
         end
     }
-
-    -- formatting
-    use {'sbdchd/neoformat'}
 
     -- Treesitter and highlight
     use {
@@ -490,6 +468,7 @@ require('packer').startup(function(use)
                 C = {dap.continue, "DapContinue"},
                 D = {ts.lsp_document_symbols, "DocumentSymbol"},
                 F = {te.extensions.file_browser.file_browser, "FileBrowser"},
+                L = {require('lint').try_lint, "CallLint"},
                 M = {"<Cmd>TodoTelescope<Cr>", "TODOs"},
                 O = {dap.repl.open, "DapREPL"},
                 P = {te.extensions.projects.projects, "Project"},
@@ -504,11 +483,11 @@ require('packer').startup(function(use)
                 ["2"] = {function() bl.go_to_buffer(2) end, "which_key_ignore"},
                 ["3"] = {function() bl.go_to_buffer(3) end, "which_key_ignore"},
                 ["4"] = {function() bl.go_to_buffer(4) end, "which_key_ignore"},
-                    ["5"] = {function() bl.go_to_buffer(5) end, "which_key_ignore"},
-                    ["6"] = {function() bl.go_to_buffer(6) end, "which_key_ignore"},
-                    ["7"] = {function() bl.go_to_buffer(7) end, "which_key_ignore"},
-                    ["8"] = {function() bl.go_to_buffer(8) end, "which_key_ignore"},
-                    ["9"] = {function() bl.go_to_buffer(9) end, "which_key_ignore"},
+                ["5"] = {function() bl.go_to_buffer(5) end, "which_key_ignore"},
+                ["6"] = {function() bl.go_to_buffer(6) end, "which_key_ignore"},
+                ["7"] = {function() bl.go_to_buffer(7) end, "which_key_ignore"},
+                ["8"] = {function() bl.go_to_buffer(8) end, "which_key_ignore"},
+                ["9"] = {function() bl.go_to_buffer(9) end, "which_key_ignore"},
                 }, {prefix="<space>"})
             wk.register({g={
                 d={ts.lsp_definitions, "GoToDef"},

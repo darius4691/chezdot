@@ -7,6 +7,9 @@
   #systemPackages{{{
   environment.systemPackages = with pkgs;
     [
+    #font
+    lxgw-wenkai
+    # text editor
     neovim tmux
     # required by neovim and common tools
     direnv starship
