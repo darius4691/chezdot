@@ -39,17 +39,23 @@ vim.opt.foldmethod = 'syntax'                       -- fold by syntax
 vim.opt.termguicolors = true                        -- enable true color
 vim.opt.completeopt = 'menu,menuone,noselect'       -- completion menu options
 vim.opt.pumheight = 7                               -- limit the completion menu height
-vim.opt.grepprg = "rg --vimgrep --no-heading --smart-case"
+vim.opt.grepprg = "rg --vimgrep --no-heading --smart-case" -- use ripgrep for completion
 vim.opt.helplang = "cn,en"
 
 vim.opt.cscopequickfix = 's-,c-,d-,i-,t-,e-,a-'
 vim.opt.cscopeverbose = false
+vim.opt.omnifunc = "v:lua.vim.lsp.omnifunc"         -- use lsp for omni completion
 
 vim.api.nvim_set_var('loaded_python_provider', 0)   -- disable python2 support
 vim.api.nvim_set_keymap('t', '<Esc>', '<C-\\><C-n>', {noremap = true})
+vim.api.nvim_set_keymap('n', ']l', '<CMD>ln<CR>', {noremap = true})
+vim.api.nvim_set_keymap('n', '[l', '<CMD>lp<CR>', {noremap = true})
+vim.api.nvim_set_keymap('n', ']f', '<CMD>cn<CR>', {noremap = true})
+vim.api.nvim_set_keymap('n', '[f', '<CMD>cp<CR>', {noremap = true})
 vim.cmd('syntax enable')                            -- syntax highlight
 vim.cmd('autocmd FileType make setlocal noexpandtab')    --change space back to tab
 vim.cmd('autocmd TermOpen * setlocal nonumber norelativenumber' )  -- disable line number in terminal mode
+-- vim.diagnostic.setloclist()
 
 --: }}}
 
@@ -193,10 +199,12 @@ require('packer').startup(function(use)
     use {
         'mfussenegger/nvim-lint',
         config = function()
-            require('lint').linters_by_ft = {
+            local lint = require('lint')
+            lint.linters_by_ft = {
               cpp = {'cppcheck'},
               c = {'cppcheck'}
             }
+            vim.cmd("command Lint :lua require('lint').try_lint()<CR>")
         end
     }
 
@@ -436,7 +444,7 @@ require('packer').startup(function(use)
                 c = {
                     function()
                         vim.cmd("cs find c <cword>")
-                        vim.cmd([[cclose]])
+                        vim.cmd("ccl")
                         ts.quickfix()
                     end,
                     "CscopeRefs"},
@@ -447,6 +455,7 @@ require('packer').startup(function(use)
                     b = {te.extensions.dap.list_breakpoints, "BreakPoints"},
                     v = {te.extensions.dap.variables, "Variables"},
                     f = {te.extensions.dap.frames, "Frames(stack)"},
+                    O = {dap.repl.open, "DapREPL"},
                     V = {function()
                         local widgets = require('dap.ui.widgets')
                         widgets.centered_float(widgets.scopes)
@@ -457,6 +466,7 @@ require('packer').startup(function(use)
                     end, "FrameWidget"},
                 },
                 h = {ts.help_tags, "HelpTag"},
+                l = {ts.loclist, "LocList"},
                 m = {ts.marks, "VimMarks"},
                 q = {ts.quickfix, "QuickFix"},
                 f = {function() ts.find_files{hidden=true} end, "OpenFile"},
@@ -468,9 +478,7 @@ require('packer').startup(function(use)
                 C = {dap.continue, "DapContinue"},
                 D = {ts.lsp_document_symbols, "DocumentSymbol"},
                 F = {te.extensions.file_browser.file_browser, "FileBrowser"},
-                L = {require('lint').try_lint, "CallLint"},
                 M = {"<Cmd>TodoTelescope<Cr>", "TODOs"},
-                O = {dap.repl.open, "DapREPL"},
                 P = {te.extensions.projects.projects, "Project"},
                 T = {vim.lsp.buf.formatting, "Formatting"},
                 ["."] = {ts.resume, "Resume"},
