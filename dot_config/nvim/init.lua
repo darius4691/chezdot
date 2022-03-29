@@ -48,15 +48,13 @@ vim.opt.omnifunc = "v:lua.vim.lsp.omnifunc"         -- use lsp for omni completi
 
 vim.api.nvim_set_var('loaded_python_provider', 0)   -- disable python2 support
 vim.api.nvim_set_keymap('t', '<Esc>', '<C-\\><C-n>', {noremap = true})
-vim.api.nvim_set_keymap('n', ']l', '<CMD>ln<CR>', {noremap = true})
-vim.api.nvim_set_keymap('n', '[l', '<CMD>lp<CR>', {noremap = true})
-vim.api.nvim_set_keymap('n', ']f', '<CMD>cn<CR>', {noremap = true})
-vim.api.nvim_set_keymap('n', '[f', '<CMD>cp<CR>', {noremap = true})
+vim.api.nvim_set_keymap('n', ']l', '<CMD>lnext<CR>', {noremap = true})
+vim.api.nvim_set_keymap('n', '[l', '<CMD>lprev<CR>', {noremap = true})
+vim.api.nvim_set_keymap('n', ']f', '<CMD>cnext<CR>', {noremap = true})
+vim.api.nvim_set_keymap('n', '[f', '<CMD>cprev<CR>', {noremap = true})
 vim.cmd('syntax enable')                            -- syntax highlight
-vim.cmd('autocmd FileType make setlocal noexpandtab')    --change space back to tab
 vim.cmd('autocmd TermOpen * setlocal nonumber norelativenumber' )  -- disable line number in terminal mode
 -- vim.diagnostic.setloclist()
-
 --: }}}
 
 -- Plugins and Packer {{{
@@ -73,7 +71,6 @@ require('packer').startup(function(use)
             'hrsh7th/cmp-nvim-lsp',
             'hrsh7th/cmp-path',
             'hrsh7th/cmp-cmdline',
-            'quangnguyen30192/cmp-nvim-tags',
             'saadparwaiz1/cmp_luasnip'
         },
         config = function()
@@ -95,7 +92,6 @@ require('packer').startup(function(use)
                     {name = "luasnip"},
                     {name = "path"},
                     {name = "buffer"},
-                    {name = "tags", max_item_count = 5}
                 }),
                 mapping = {
                     ["<Tab>"] = cmp.mapping(
@@ -204,14 +200,17 @@ require('packer').startup(function(use)
               cpp = {'cppcheck'},
               c = {'cppcheck'}
             }
-            vim.cmd("command Lint :lua require('lint').try_lint()<CR>")
+            vim.cmd("command! Lint :lua require('lint').try_lint()<CR>")
         end
     }
 
     -- LSP and debugger}}}
     -- UI and theme {{{
     -- nix highlight
-    use 'LnL7/vim-nix'
+    use {
+        'LnL7/vim-nix',
+        ft = {"nix"}
+    }
 
     use {
         'folke/tokyonight.nvim',
@@ -238,49 +237,26 @@ require('packer').startup(function(use)
         config = function()
             require('lualine').setup{
                 options = {
-                    component_separators = {},
-                    section_separators = {},
+                    component_separators = { left = '', right = '' },
+                    section_separators = { left = '', right = '' },
+                },
+                tabline = {
+                    lualine_a = {"tabs"},
+                    lualine_z = {"buffers"},
                 },
                 extensions = {'fugitive', 'quickfix'}
             }
         end
     }
-    -- bufferline
-    use {
-        'akinsho/nvim-bufferline.lua',
-        requires = "kyazdani42/nvim-web-devicons",
-        config = function()
-            require("bufferline").setup{}
-        end
-    }
     --- }}}
     -- tools {{{
-    -- enable directory-based config files
-    use {
-        "klen/nvim-config-local",
-        config = function()
-            require('config-local').setup {
-            -- Default configuration (optional)
-            config_files = {".nvimrc.lua", ".nvimrc"},  -- Config file patterns to load (lua supported)
-            hashfile = vim.fn.stdpath("data") .. "/config-local", -- Where the plugin keeps files data
-            autocommands_create = true,                 -- Create autocommands (VimEnter, DirectoryChanged)
-            commands_create = true,                     -- Create commands (ConfigSource, ConfigEdit, ConfigTrust, ConfigIgnore)
-            silent = false,                             -- Disable plugin messages (Config loaded/ignored)
-            }
-        end
-    }
     -- git integration
-    use 'tpope/vim-fugitive'
-    -- align
-    use 'junegunn/vim-easy-align'
-    -- <count>ai ii aI iI indent level
-    use 'michaeljsmith/vim-indent-object'
-    -- quoting/parenthesizing
+    use 'tpope/vim-fugitive' -- align
+    use 'junegunn/vim-easy-align' -- <count>ai ii aI iI indent level
+    use 'michaeljsmith/vim-indent-object' -- quoting/parenthesizing
     use 'tpope/vim-surround'
-    -- enable repeating supported plugin maps with .
-    use 'tpope/vim-repeat'
-    use 'jiangmiao/auto-pairs'
-    -- colorize hex color code for quick theme configuration
+    use 'tpope/vim-repeat' -- enable repeating supported plugin maps with .
+    use 'jiangmiao/auto-pairs' -- colorize hex color code for quick theme configuration
     use { "norcalli/nvim-colorizer.lua" ,
         config = function()
             require"colorizer".setup{
@@ -289,7 +265,7 @@ require('packer').startup(function(use)
                 "dosini"
             }
         end
-        }
+    }
 
     use {
         "darius4691/nvim-projectconfig",
@@ -374,8 +350,6 @@ require('packer').startup(function(use)
         end
     }
 
-    use {"seandewar/killersheep.nvim"}
-
     -- debug virtual text
     use {
         'theHamsta/nvim-dap-virtual-text',
@@ -437,7 +411,7 @@ require('packer').startup(function(use)
             local wk = require("which-key")
             local te = require('telescope')
             local ts = require("telescope.builtin")
-            local bl = require("bufferline")
+            -- local bl = require("bufferline")
             local dap = require("dap")
             wk.register({
                 b = {ts.buffers, "Buffers"},
@@ -487,15 +461,15 @@ require('packer').startup(function(use)
                 ["["] = {vim.diagnostic.goto_next, "PrevDiag"},
                 ["/"] = {ts.current_buffer_fuzzy_find, "FindCurrent"},
                 ["?"] = {ts.live_grep, "LiveGrep"},
-                ["1"] = {function() bl.go_to_buffer(1) end, "which_key_ignore"},
-                ["2"] = {function() bl.go_to_buffer(2) end, "which_key_ignore"},
-                ["3"] = {function() bl.go_to_buffer(3) end, "which_key_ignore"},
-                ["4"] = {function() bl.go_to_buffer(4) end, "which_key_ignore"},
-                ["5"] = {function() bl.go_to_buffer(5) end, "which_key_ignore"},
-                ["6"] = {function() bl.go_to_buffer(6) end, "which_key_ignore"},
-                ["7"] = {function() bl.go_to_buffer(7) end, "which_key_ignore"},
-                ["8"] = {function() bl.go_to_buffer(8) end, "which_key_ignore"},
-                ["9"] = {function() bl.go_to_buffer(9) end, "which_key_ignore"},
+                ["1"] = {"1gt", "which_key_ignore"},
+                ["2"] = {"2gt", "which_key_ignore"},
+                ["3"] = {"3gt", "which_key_ignore"},
+                ["4"] = {"4gt", "which_key_ignore"},
+                ["5"] = {"5gt", "which_key_ignore"},
+                ["6"] = {"6gt", "which_key_ignore"},
+                ["7"] = {"7gt", "which_key_ignore"},
+                ["8"] = {"8gt", "which_key_ignore"},
+                ["9"] = {"9gt", "which_key_ignore"},
                 }, {prefix="<space>"})
             wk.register({g={
                 d={ts.lsp_definitions, "GoToDef"},

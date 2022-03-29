@@ -7,8 +7,6 @@
   #systemPackages{{{
   environment.systemPackages = with pkgs;
     [
-    #font
-    lxgw-wenkai
     # text editor
     neovim tmux
     # required by neovim and common tools
@@ -18,14 +16,14 @@
     # COMMANDLINE TOOLS
     fd ripgrep bat exa fzf zoxide
     wget tree jq perl rename
-    gitFull git-lfs httpie ranger
+    gitFull git-lfs httpie
     #delta
     #SYSTEM TOOLS
     gnupg ncdu procs
     socat htop coreutils
     # DEVEL TOOLS
     universal-ctags global cscope
-    cmake gcc libgccjit
+    gnumake cmake gcc libgccjit
     sbcl racket-minimal
     # LITERAL TOOLS
     graphviz pandoc gnuplot
@@ -44,6 +42,18 @@
     #nyxt
     ];
   #}}}
+  fonts = {
+    #enableFontDir = true;
+    fonts = with pkgs; [
+      lxgw-wenkai
+      sarasa-gothic
+      fira-code
+      emacs-all-the-icons-fonts
+      source-han-sans
+      source-han-serif
+    ];
+  };
+
   environment.variables = rec {
     EDITOR = "nvim";
     XDG_CACHE_HOME  = "\${HOME}/.cache";
@@ -92,6 +102,7 @@
     home = "/Users/darius";
   };
   home-manager.users.darius = { pkgs, ... }: {
+    fonts.fontconfig.enable = true;
     programs.zsh = {
       enable = true;
       dotDir = ".config/zsh";
@@ -107,6 +118,7 @@
         GO111MODULE = "on";
         GOPATH = "\${HOME}/.local/share/go";
         MANPAGER = "sh -c 'col -bx | ${pkgs.bat}/bin/bat -l man -p'";
+        FONTCONFIG_PATH = "/opt/X11/lib/X11/fontconfig";
       };
       shellAliases = {
         ll = "${pkgs.exa}/bin/exa -al";

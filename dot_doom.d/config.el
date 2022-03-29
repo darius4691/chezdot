@@ -7,7 +7,7 @@
 ;; Some functionality uses this to identify you, e.g. GPG configuration, email
 ;; clients, file templates and snippets.
 (setq user-full-name "Darius Huang"
-      user-mail-address "dariushhh@hotmail.com")
+      user-mail-address "dariush4691@outlook.com")
 
 ;; Doom exposes five (optional) variables for controlling fonts in Doom. Here
 ;; are the three important ones:
@@ -22,8 +22,9 @@
 ;;(setq doom-font (font-spec :family "FiraCode Nerd Font Mono" :size 13)
 ;;     doom-variable-pitch-font (font-spec :family "sans" :size 14))
 
-(setq doom-font (font-spec :family "FiraCode Nerd Font Mono" :size 16))
-
+(setq doom-font (font-spec :family "FiraCode Nerd Font Mono" :size 16)
+      doom-unicode-font (font-spec :family "Hei")
+      )
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
@@ -45,6 +46,11 @@
 (setq pyim-punctuation-dict nil) ;全角半角问题
 (setq default-input-method "pyim")
 (pyim-default-scheme 'xiaohe-shuangpin)
+(pyim-extra-dicts-add-dict
+           `(:name "Greatdict"
+                   :file "/Users/darius/.doom.d/pyim-greatdict.pyim.gz"
+                   :coding utf-8-unix
+                   :dict-type pinyin-dict))
 
 (setq dash-docs-enable-debugging nil)
 (setq dash-docs-browser-func 'eww)
@@ -70,3 +76,45 @@
 ;;
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
+
+(after! ox-latex
+    (setq org-latex-pdf-process '("latexmk -xelatex -quiet -shell-escape -f %f"))
+    (add-to-list 'org-latex-classes
+             '("chinesepaper"
+               "\\documentclass[lang=cn]{article}
+\\usepackage{xeCJK}
+\\setCJKmainfont[BoldFont=STZhongsong, ItalicFont=STKaiti]{STSong}
+\\setCJKsansfont[BoldFont=STHeiti]{STXihei}
+\\setCJKmonofont{STFangsong}
+[DEFAULT-PACKAGES]
+[PACKAGES]
+[EXTRA]"
+               ("\\section{%s}" . "\\section*{%s}")
+               ("\\subsection{%s}" . "\\subsection*{%s}")
+               ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+               ("\\paragraph{%s}" . "\\paragraph*{%s}")
+               ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+    (setq org-latex-listings 'minted)
+    (add-to-list 'org-latex-packages-alist '("" "minted")))
+
+(defun set-buffer-variable-pitch ()
+  (interactive)
+  ;(variable-pitch-mode t)
+  ;(setq line-spacing 3)
+  (set-face-attribute 'org-table nil :family "更纱黑体 Mono SC Nerd")
+  ;(set-face-attribute 'org-link nil :inherit 'fixed-pitch)
+  ;(set-face-attribute 'org-code nil :inherit 'fixed-pitch)
+  ;(set-face-attribute 'org-block nil :inherit 'fixed-pitch)
+  ;(set-face-attribute 'org-date nil :inherit 'fixed-pitch)
+  ;(set-face-attribute 'org-special-keyword nil :inherit 'fixed-pitch)
+  )
+(add-hook 'org-mode-hook 'set-buffer-variable-pitch)
+(add-hook 'markdown-mode-hook 'set-buffer-variable-pitch)
+(add-hook 'Info-mode-hook 'set-buffer-variable-pitch)
+(setq org-log-done 'time)
+(setq pangu-spacing-real-insert-separtor t)
+(use-package! pangu-spacing
+  :hook (text-mode . pangu-spacing-mode)
+  :config
+  ;; Always insert `real' space in org-mode.
+  (setq-hook! 'org-mode-hook pangu-spacing-real-insert-separtor t))
