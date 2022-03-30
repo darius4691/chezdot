@@ -118,3 +118,11 @@
   :config
   ;; Always insert `real' space in org-mode.
   (setq-hook! 'org-mode-hook pangu-spacing-real-insert-separtor t))
+
+(def-package! org-ref
+    :after org
+    :init
+    ; code to run before loading org-ref
+    :config
+    ; code to run after loading org-ref
+    )

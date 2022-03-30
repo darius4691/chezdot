@@ -146,22 +146,12 @@ require('packer').startup(function(use)
                 capabilities = capabilities,
                 settings = {
                     Lua = {
-                        runtime = {
-                          -- Tell the language server which version of Lua you're using (most likely LuaJIT in the case of Neovim)
-                          version = 'LuaJIT',
-                        },
-                        diagnostics = {
-                          -- Get the language server to recognize the `vim` global
-                          globals = {'vim'},
-                        },
+                        runtime = { version = 'LuaJIT' },
+                        diagnostics = { globals = {'vim'} },
                         workspace = {
-                          -- Make the server aware of Neovim runtime files
-                          library = vim.api.nvim_get_runtime_file("", true),
+                            library = vim.api.nvim_get_runtime_file("", true),
                         },
-                        -- Do not send telemetry data containing a randomized but unique identifier
-                        telemetry = {
-                          enable = false,
-                        },
+                        telemetry = { enable = false, },
                     },
                 }
             }
@@ -252,10 +242,10 @@ require('packer').startup(function(use)
     -- tools {{{
     -- git integration
     use 'tpope/vim-fugitive' -- align
-    use 'junegunn/vim-easy-align' -- <count>ai ii aI iI indent level
-    use 'michaeljsmith/vim-indent-object' -- quoting/parenthesizing
     use 'tpope/vim-surround'
     use 'tpope/vim-repeat' -- enable repeating supported plugin maps with .
+    use 'junegunn/vim-easy-align' -- <count>ai ii aI iI indent level
+    use 'michaeljsmith/vim-indent-object' -- quoting/parenthesizing
     use 'jiangmiao/auto-pairs' -- colorize hex color code for quick theme configuration
     use { "norcalli/nvim-colorizer.lua" ,
         config = function()
@@ -277,7 +267,6 @@ require('packer').startup(function(use)
     -- tags auto generating
     use {
         "ludovicchabant/vim-gutentags",
-        requires = {'darius4691/gutentags_plus'},
         config = function()
             local set_var_list = function(var_pairs)
                 for k, v in pairs(var_pairs) do
@@ -301,8 +290,7 @@ require('packer').startup(function(use)
                     '--kinds-C++=+px',
                     '--output-format=e-ctags'
                 },
-                gutentags_modules = { 'ctags', 'gtags_cscope' },
-                gutentags_plus_nomap = 1,
+                gutentags_modules = { 'ctags' },
                 gutentags_define_advanced_commands = 1;
             })
         end
@@ -318,9 +306,7 @@ require('packer').startup(function(use)
         run = ':TSUpdate',
         config = function()
             require'nvim-treesitter.configs'.setup{
-                ensure_installed = {
-                    "python", "go", "json", "bash", "lua", "c", "cpp",
-                },
+                ensure_installed = { "python", "go", "json", "bash", "lua", "c", "cpp" },
                 highlight = {
                     enable = true,
                     additional_vim_regex_highlighting = false,
@@ -340,11 +326,8 @@ require('packer').startup(function(use)
                 },
                 rainbow = {
                   enable = true,
-                  -- disable = { "jsx", "cpp" }, list of languages you want to disable the plugin for
                   extended_mode = true, -- Also highlight non-bracket delimiters like html tags, boolean or table: lang -> boolean
                   max_file_lines = 10000, -- Do not enable for files with more than n lines, int
-                  -- colors = {}, -- table of hex strings
-                  -- termcolors = {} -- table of colour name strings
                 }
             }
         end
@@ -362,7 +345,7 @@ require('packer').startup(function(use)
         "folke/todo-comments.nvim",
         requires = "nvim-lua/plenary.nvim",
         config = function()
-            require("todo-comments").setup{}
+            require("todo-comments").setup()
         end
     }
 
@@ -388,15 +371,21 @@ require('packer').startup(function(use)
             local ts = require("telescope")
             local actions = require "telescope.actions"
             ts.setup {
-              pickers = {
-                buffers = {
-                  mappings = {
-                    i = {
-                      ["<c-d>"] = actions.delete_buffer,
+                pickers = {
+                    quickfix = { theme = "dropdown" },
+                    loclist = { theme = "dropdown" },
+                    marks = { theme = "ivy" },
+                    current_buffer_fuzzy_find = { theme = "ivy" },
+                    find_files = { hidden = true },
+                    commands = { theme = "ivy" },
+                    buffers = {
+                        mappings = {
+                            i = {
+                                ["<c-d>"] = actions.delete_buffer,
+                            }
+                        }
                     }
-                  }
                 }
-              }
             }
             ts.load_extension('dap')
             ts.load_extension('projects')
@@ -415,13 +404,6 @@ require('packer').startup(function(use)
             local dap = require("dap")
             wk.register({
                 b = {ts.buffers, "Buffers"},
-                c = {
-                    function()
-                        vim.cmd("cs find c <cword>")
-                        vim.cmd("ccl")
-                        ts.quickfix()
-                    end,
-                    "CscopeRefs"},
                 d = {
                     name = 'DapList',
                     c = {te.extensions.dap.commands, "Commands"},
@@ -429,7 +411,7 @@ require('packer').startup(function(use)
                     b = {te.extensions.dap.list_breakpoints, "BreakPoints"},
                     v = {te.extensions.dap.variables, "Variables"},
                     f = {te.extensions.dap.frames, "Frames(stack)"},
-                    O = {dap.repl.open, "DapREPL"},
+                    o = {dap.repl.open, "DapREPL"},
                     V = {function()
                         local widgets = require('dap.ui.widgets')
                         widgets.centered_float(widgets.scopes)
@@ -439,14 +421,14 @@ require('packer').startup(function(use)
                         widgets.centered_float(widgets.frames)
                     end, "FrameWidget"},
                 },
+                g = {ts.grep_string, "GrepCword"},
                 h = {ts.help_tags, "HelpTag"},
                 l = {ts.loclist, "LocList"},
                 m = {ts.marks, "VimMarks"},
-                q = {ts.quickfix, "QuickFix"},
-                f = {function() ts.find_files{hidden=true} end, "OpenFile"},
+                c = {ts.quickfix, "QuickFix"},
+                f = {ts.find_files, "OpenFile"},
                 p = {ts.diagnostics, "Diagnostics"},
                 r = {ts.lsp_references, "ListReferences"},
-                s = {vim.lsp.buf.rename, "RenameVariable"},
                 t = {ts.treesitter, "TreesitterObject"},
                 B = {dap.toggle_breakpoint, "DapBreak"},
                 C = {dap.continue, "DapContinue"},
@@ -454,6 +436,7 @@ require('packer').startup(function(use)
                 F = {te.extensions.file_browser.file_browser, "FileBrowser"},
                 M = {"<Cmd>TodoTelescope<Cr>", "TODOs"},
                 P = {te.extensions.projects.projects, "Project"},
+                S = {vim.lsp.buf.rename, "RenameVariable"},
                 T = {vim.lsp.buf.formatting, "Formatting"},
                 ["."] = {ts.resume, "Resume"},
                 [":"] = {ts.commands, "Commands"},
