@@ -8,7 +8,7 @@
   environment.systemPackages = with pkgs;
     [
     # text editor
-    neovim tmux
+    neovim emacs tmux
     # required by neovim and common tools
     direnv starship
     luajit sumneko-lua-language-server
@@ -16,7 +16,7 @@
     # COMMANDLINE TOOLS
     fd ripgrep bat exa fzf zoxide
     wget tree jq perl rename
-    gitFull git-lfs httpie
+    gitFull git-lfs
     #delta
     #SYSTEM TOOLS
     gnupg ncdu procs
@@ -42,17 +42,17 @@
     #nyxt
     ];
   #}}}
-  fonts = {
-    #enableFontDir = true;
-    fonts = with pkgs; [
-      lxgw-wenkai
-      sarasa-gothic
-      fira-code
-      emacs-all-the-icons-fonts
-      source-han-sans
-      source-han-serif
-    ];
-  };
+  #fonts = {
+  #  #enableFontDir = true;
+  #  fonts = with pkgs; [
+  #    lxgw-wenkai
+  #    sarasa-gothic
+  #    fira-code
+  #    emacs-all-the-icons-fonts
+  #    source-han-sans
+  #    source-han-serif
+  #  ];
+  #};
 
   environment.variables = rec {
     EDITOR = "nvim";
