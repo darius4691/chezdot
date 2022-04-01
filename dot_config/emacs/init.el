@@ -1,14 +1,27 @@
 ;;; Startup
-;;; PACKAGE LIST
-(defvar darius/default-font-size 200)
+;; 在载入颜色主题和package时, emacs会在init.el里自动创建配置代码, 这里提前载入這些
+(setq custom-file "~/.config/emacs/custom.el")
+(load custom-file)
+
+;;; 设置个人信息; 其中邮箱主要用于gpg加密相关进程
 (setq user-full-name "黄耀庭"
       user-mail-address "dariush4691@outlook.com")
 
+;; 设置字体, 注意如果emacs使用守护进程的方式启动, 需要使用把字体设置加入HOOK中
+(defvar darius/default-font-size 200)
+(defun darius/set-font ()
+  (set-face-attribute 'default nil :font "更纱黑体 Mono SC Nerd" :height darius/default-font-size)
+  (set-face-attribute 'variable-pitch nil :font "思源宋体" :height darius/default-font-size :weight 'regular)
+  (set-face-attribute 'fixed-pitch nil :font "更纱黑体 Mono SC Nerd" :height darius/default-font-size :weight 'regular))
+(if (daemonp)
+    (add-hook 'after-make-frame-functions
+	      (lambda (frame)
+		(with-selected-frame frame
+		  (darius/set-font))))
+    (darius/set-font))
+
 
 ;; basic font settings
-(set-face-attribute 'default nil :font "更纱黑体 Mono SC Nerd" :height darius/default-font-size)
-(set-face-attribute 'variable-pitch nil :font "思源宋体" :height darius/default-font-size :weight 'regular)
-(set-face-attribute 'fixed-pitch nil :font "更纱黑体 Mono SC Nerd" :height darius/default-font-size :weight 'regular)
 
 (require 'package) ; This should be autoloaded. I'm putting this line here just in case not.
 (setq package-archives '(("melpa" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/")
@@ -28,6 +41,7 @@
 
 (menu-bar-mode -1)          ; Disable the menu bar
 (setq visible-bell t)       ; do not sound the bell. Instead, use visual blink
+(electric-pair-mode)        ; toggle auto-pair-mode
 
 
 ;;; BOOTSTRAP USE-PACKAGE
@@ -82,7 +96,29 @@
   :config
   (vertico-mode)
   )
+(use-package corfu
+  ;; Optional customizations
+  :custom
+  (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
+  (corfu-auto t)                 ;; Enable auto completion
+  (corfu-separator ?\s)          ;; Orderless field separator
+  (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
+  ;; (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
+  ;; (corfu-preview-current nil)    ;; Disable current candidate preview
+  ;; (corfu-preselect-first nil)    ;; Disable candidate preselection
+  ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
+  ;; (corfu-echo-documentation nil) ;; Disable documentation in the echo area
+  ;; (corfu-scroll-margin 5)        ;; Use scroll margin
 
+  ;; You may want to enable Corfu only for certain modes.
+  ;; :hook ((prog-mode . corfu-mode)
+  ;;        (shell-mode . corfu-mode)
+  ;;        (eshell-mode . corfu-mode))
+
+  ;; Recommended: Enable Corfu globally.
+  ;; This is recommended since dabbrev can be used globally (M-/).
+  :init
+  (corfu-global-mode)) 
 ;;; IMPROVE THE CODING EXPIRENCE
 
 (use-package which-key
@@ -169,11 +205,9 @@
       org-edit-src-content-indentation 0
       org-confirm-babel-evaluate nil
       org-babel-lisp-eval-fn #'sly-eval
-      )
-
+      org-highlight-latex-and-related '(native script entities))
 (use-package mixed-pitch
   :hook (org-mode . mixed-pitch-mode))
-
 (use-package gnuplot)
 
 ;; active Babel languages
@@ -191,6 +225,74 @@
    (lisp . t)
    (haskell . t)
    (emacs-lisp . t)))
+
+;; orgmode export latex template
+(with-eval-after-load 'ox-latex
+  (setq org-latex-compiler "xelatex")
+  (setq org-latex-pdf-process '("latexmk -%latex -quiet -shell-escape -f %f"))
+  (add-to-list 'org-latex-classes
+           '("myreport"
+             "\\documentclass{minereport}
+              [DEFAULT-PACKAGES]
+              [PACKAGES]
+              [EXTRA]"
+             ("\\section{%s}" . "\\section*{%s}")
+             ("\\subsection{%s}" . "\\subsection*{%s}")
+             ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+             ("\\paragraph{%s}" . "\\paragraph*{%s}")
+             ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+  (add-to-list 'org-latex-classes
+             '("elegantpaper"
+               "\\documentclass[lang=cn,11pt,a4paper,cite=authoryear,fontset=none]{elegantpaper}
+\\setCJKmainfont[BoldFont={FZHTK--GBK1-0},ItalicFont={FZKTK--GBK1-0}]{FZSSK--GBK1-0}
+\\setCJKsansfont[BoldFont={FZHTK--GBK1-0},ItalicFont={FZHTK--GBK1-0}]{FZHTK--GBK1-0}
+\\setCJKmonofont[BoldFont={FZHTK--GBK1-0},ItalicFont={FZHTK--GBK1-0}]{FZFSK--GBK1-0}
+\\setCJKfamilyfont{zhsong}{FZSSK--GBK1-0}
+\\setCJKfamilyfont{zhhei}{FZHTK--GBK1-0}
+\\setCJKfamilyfont{zhkai}{FZKTK--GBK1-0}
+\\setCJKfamilyfont{zhfs}{FZFSK--GBK1-0}
+\\newcommand*{\\songti}{\\CJKfamily{zhsong}}
+\\newcommand*{\\heiti}{\\CJKfamily{zhhei}}
+\\newcommand*{\\kaishu}{\\CJKfamily{zhkai}}
+\\newcommand*{\\fangsong}{\\CJKfamily{zhfs}}
+[DEFAULT-PACKAGES]
+[PACKAGES]
+[EXTRA]"
+               ("\\section{%s}" . "\\section*{%s}")
+               ("\\subsection{%s}" . "\\subsection*{%s}")
+               ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+               ("\\paragraph{%s}" . "\\paragraph*{%s}")
+               ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+    (setq org-latex-default-class "elegantpaper"))
+(use-package ox-pandoc
+  :config
+  (setq org-pandoc-options-for-latex-pdf
+	'((pdf-engine . "xelatex")
+	  (listings . t)
+	  (template . eisvogel)
+	  (variable . "CJKmainfont=SourceHanSansSC-Regular")
+	  (lua-filter . "no-code-attributes.lua"))))
+
+;; Here's a very basic sample for configuration of org-roam using use-package:
+(use-package org-roam
+  :ensure t
+  :custom
+  (org-roam-directory (file-truename "~/org-roam"))
+  :bind (("C-c n l" . org-roam-buffer-toggle)
+         ("C-c n f" . org-roam-node-find)
+         ("C-c n g" . org-roam-graph)
+         ("C-c n i" . org-roam-node-insert)
+         ("C-c n c" . org-roam-capture)
+         ;; Dailies
+         ("C-c n j" . org-roam-dailies-capture-today))
+  :config
+  ;; If you're using a vertical completion framework, you might want a more informative completion interface
+  (setq org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
+  (org-roam-db-autosync-mode)
+  ;; If using org-roam-protocol
+  (require 'org-roam-protocol))
+
+
 ;; INPUT METHOD
 
 (use-package posframe)
@@ -233,6 +335,3 @@
   (dirvish-override-dired-mode t))
 
 
-;; LAST USE CUSTOM-FILE
-(setq custom-file "~/.config/emacs/custom.el")
-(load custom-file)

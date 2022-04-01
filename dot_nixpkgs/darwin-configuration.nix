@@ -91,6 +91,11 @@
     '';
   };
 
+  # toggle emacs services
+  services.emacs = {
+    enable = true;
+  };
+
   # Create /etc/bashrc that loads the nix-darwin environment.
   programs.zsh.enable = true;
   programs.gnupg.agent = {
@@ -127,7 +132,8 @@
         du = "${pkgs.ncdu}/bin/ncdu";
         top = "${pkgs.htop}/bin/htop";
         ".." = "cd ..";
-        cat="${pkgs.bat}/bin/bat --paging=never";
+        cat = "${pkgs.bat}/bin/bat --paging=never";
+        e = "emacsclient --create-frame --alternate-editor=\"\"";
       };
       plugins = [
         {

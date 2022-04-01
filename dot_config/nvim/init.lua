@@ -57,6 +57,8 @@ vim.cmd('autocmd TermOpen * setlocal nonumber norelativenumber' )  -- disable li
 -- vim.diagnostic.setloclist()
 --: }}}
 
+vim.cmd("command! ReloadInit :luafile " .. vim.fn.stdpath("config") .. "/init.lua")
+
 -- Plugins and Packer {{{
 require('packer').startup(function(use)
     -- Packer itself
@@ -208,11 +210,12 @@ require('packer').startup(function(use)
             vim.g.tokyonight_style = "night"
         end
     }
+    use {'sainnhe/everforest'}
     use {
         'navarasu/onedark.nvim',
         config = function()
             vim.cmd[[
-            colorscheme tokyonight
+            colorscheme everforest
             highlight DapBreakpoint ctermbg=0 guifg=#993939 guibg=#31353f
             highlight DapLogPoint   ctermbg=0 guifg=#61afef guibg=#31353f
             highlight DapStopped    ctermbg=0 guifg=#98c379 guibg=#31353f
