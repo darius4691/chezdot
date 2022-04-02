@@ -14,14 +14,11 @@
   (set-face-attribute 'variable-pitch nil :font "思源宋体" :height darius/default-font-size :weight 'regular)
   (set-face-attribute 'fixed-pitch nil :font "更纱黑体 Mono SC Nerd" :height darius/default-font-size :weight 'regular))
 (if (daemonp)
-    (add-hook 'after-make-frame-functions
-	      (lambda (frame)
-		(with-selected-frame frame
-		  (darius/set-font))))
+    (add-hook 'server-after-make-frame-hook #'darius/set-font)
     (darius/set-font))
 
 
-;; basic font settings
+;; 软件设置; 由于国内
 
 (require 'package) ; This should be autoloaded. I'm putting this line here just in case not.
 (setq package-archives '(("melpa" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/")
@@ -326,12 +323,53 @@
   :hook (LaTex-mode . evil-tex-mode))
 (add-hook 'LaTeX-mode-hook 'turn-on-auto-fill) ; 在latex模式下输入文字自动换行
 
-;; Applications
-(use-package transient)
-(use-package dirvish
-  :bind (:map evil-normal-state-map
-	 ("<leader>F" . dirvish))
+;; 文件管理器
+(use-package dired
+  :ensure nil
+  :commands (dired dired-jump)
+  :bind (("C-x C-j" . dired-jump))
+  :custom ((dired-listing-switches "-agho --group-directories-first"))
   :config
-  (dirvish-override-dired-mode t))
+  (evil-collection-define-key 'normal 'dired-mode-map
+    "h" 'dired-single-up-directory
+    "l" 'dired-single-buffer))
 
+(use-package dired-single
+  :commands (dired dired-jump))
 
+(use-package all-the-icons-dired
+  :hook (dired-mode . all-the-icons-dired-mode))
+
+(use-package dired-open
+  :commands (dired dired-jump)
+  :config
+  ;; Doesn't work as expected!
+  ;;(add-to-list 'dired-open-functions #'dired-open-xdg t)
+  (setq dired-open-extensions '(("png" . "feh")
+                                ("mkv" . "mpv"))))
+
+(use-package dired-hide-dotfiles
+  :hook (dired-mode . dired-hide-dotfiles-mode)
+  :config
+  (evil-collection-define-key 'normal 'dired-mode-map
+    "H" 'dired-hide-dotfiles-mode))
+
+(use-package ggtags)
+(use-package call-graph
+  :config
+  (evil-define-key 'normal call-graph-mode
+    "e" 'cg-widget-expand-all
+    "c" 'cg-widget-collapse-all
+    "p" 'widget-backward
+    "n" 'widget-forward
+    "q" 'cg-quit
+    "+" 'cg-expand
+    "_" 'cg-collapse
+    "o" 'cg-goto-file-at-point
+    "g" 'cg-at-point
+    "d" 'cg-remove-caller
+    "l" 'cg-select-caller-location
+    "r" 'cg-reset-caller-cache
+    "t" 'cg-toggle-show-func-args
+    "f" 'cg-toggle-invalid-reference
+    (kbd "<RET>") 'cg-goto-file-at-point))

@@ -23,7 +23,7 @@
     socat htop coreutils
     # DEVEL TOOLS
     universal-ctags global cscope
-    gnumake cmake gcc libgccjit
+    gnumake cmake gcc libgccjit llvm
     sbcl racket-minimal
     # LITERAL TOOLS
     graphviz pandoc gnuplot
@@ -40,7 +40,12 @@
     chezmoi
     tealdeer
     #nyxt
-    ];
+    # PYTHON and its packages
+    python310
+    python310Packages.pygments
+    # NODE and its packages
+    nodePackages.pyright
+  ];
   #}}}
   #fonts = {
   #  #enableFontDir = true;
@@ -133,7 +138,7 @@
         top = "${pkgs.htop}/bin/htop";
         ".." = "cd ..";
         cat = "${pkgs.bat}/bin/bat --paging=never";
-        e = "emacsclient --create-frame --alternate-editor=\"\"";
+        e = "emacsclient --no-wait --alternate-editor=\"\"";
       };
       plugins = [
         {

@@ -52,6 +52,15 @@ vim.api.nvim_set_keymap('n', ']l', '<CMD>lnext<CR>', {noremap = true})
 vim.api.nvim_set_keymap('n', '[l', '<CMD>lprev<CR>', {noremap = true})
 vim.api.nvim_set_keymap('n', ']f', '<CMD>cnext<CR>', {noremap = true})
 vim.api.nvim_set_keymap('n', '[f', '<CMD>cprev<CR>', {noremap = true})
+vim.api.nvim_set_keymap('n', '<C-_>s', '<CMD>cs f s <cword><CR>', {noremap = true})
+vim.api.nvim_set_keymap('n', '<C-_>g', '<CMD>cs f g <cword><CR>', {noremap = true})
+vim.api.nvim_set_keymap('n', '<C-_>c', '<CMD>cs f c <cword><CR>', {noremap = true})
+vim.api.nvim_set_keymap('n', '<C-_>t', '<CMD>cs f t <cword><CR>', {noremap = true})
+vim.api.nvim_set_keymap('n', '<C-_>e', '<CMD>cs f e <cword><CR>', {noremap = true})
+vim.api.nvim_set_keymap('n', '<C-_>f', '<CMD>cs f f <cfile><CR>', {noremap = true})
+vim.api.nvim_set_keymap('n', '<C-_>i', '<CMD>cs f i <cfile><CR>', {noremap = true})
+vim.api.nvim_set_keymap('n', '<C-_>d', '<CMD>cs f d <cword><CR>', {noremap = true})
+vim.api.nvim_set_keymap('n', '<C-_>a', '<CMD>cs f a <cword><CR>', {noremap = true})
 vim.cmd('syntax enable')                            -- syntax highlight
 vim.cmd('autocmd TermOpen * setlocal nonumber norelativenumber' )  -- disable line number in terminal mode
 -- vim.diagnostic.setloclist()
@@ -293,8 +302,12 @@ require('packer').startup(function(use)
                     '--kinds-C++=+px',
                     '--output-format=e-ctags'
                 },
-                gutentags_modules = { 'ctags' },
+                gutentags_modules = { 'ctags', 'cscope' },
                 gutentags_define_advanced_commands = 1;
+                gutentags_file_list_command = "find . -name " .. table.concat(
+                { '"*.c"', '"*.cpp"', '"*.h"', '"*.py"', '"*.lua"', '"*.go"'},
+                " -o -name "
+                );
             })
         end
     }
