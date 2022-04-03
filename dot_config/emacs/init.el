@@ -1,13 +1,9 @@
-;;; Startup
-;; 在载入颜色主题和package时, emacs会在init.el里自动创建配置代码, 这里提前载入這些
 (setq custom-file "~/.config/emacs/custom.el")
 (load custom-file)
 
-;;; 设置个人信息; 其中邮箱主要用于gpg加密相关进程
 (setq user-full-name "黄耀庭"
       user-mail-address "dariush4691@outlook.com")
 
-;; 设置字体, 注意如果emacs使用守护进程的方式启动, 需要使用把字体设置加入HOOK中
 (defvar darius/default-font-size 200)
 (defun darius/set-font ()
   (set-face-attribute 'default nil :font "更纱黑体 Mono SC Nerd" :height darius/default-font-size)
@@ -17,9 +13,6 @@
     (add-hook 'server-after-make-frame-hook #'darius/set-font)
     (darius/set-font))
 
-
-;; 软件设置; 由于国内
-
 (require 'package) ; This should be autoloaded. I'm putting this line here just in case not.
 (setq package-archives '(("melpa" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/")
 			 ("org" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/org/")
@@ -28,32 +21,22 @@
 (unless package-archive-contents
  (package-refresh-contents))
 
-;; disable the init gui fetures like scroll-bar or tool bar
 (setq inhibit-startup-message t)
-
 (scroll-bar-mode -1)        ; Disable visible scrollbar
 (tool-bar-mode -1)          ; Disable the toolbar
 (tooltip-mode -1)           ; Disable tooltips
 (set-fringe-mode 10)        ; Give some breathing room, modify the spacing 
-
 (menu-bar-mode -1)          ; Disable the menu bar
 (setq visible-bell t)       ; do not sound the bell. Instead, use visual blink
 (electric-pair-mode)        ; toggle auto-pair-mode
 
-
-;;; BOOTSTRAP USE-PACKAGE
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))
 (eval-when-compile (require 'use-package))
 (setq use-package-always-ensure t)
 
-(require 'use-package)
-;;; UNDO
-;; Vim style undo not needed for emacs 28
 (use-package undo-fu)
-
-;;; Vim Bindings
 (use-package evil
   :demand t
   :bind (("<escape>" . keyboard-escape-quit))
@@ -70,7 +53,6 @@
   (evil-set-leader 'normal "\\" t) ;Set localleader if last arg is non-nil 
   )
 
-;;; Vim Bindings Everywhere else
 (use-package evil-collection
   :after evil
   :config
@@ -88,41 +70,27 @@
   :config
   (load-theme 'gruvbox))
 
-;;;Vertical is for simple completion
-(use-package vertico
-  :config
-  (vertico-mode)
-  )
-(use-package corfu
-  ;; Optional customizations
-  :custom
-  (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
-  (corfu-auto t)                 ;; Enable auto completion
-  (corfu-separator ?\s)          ;; Orderless field separator
-  (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
-  ;; (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
-  ;; (corfu-preview-current nil)    ;; Disable current candidate preview
-  ;; (corfu-preselect-first nil)    ;; Disable candidate preselection
-  ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
-  ;; (corfu-echo-documentation nil) ;; Disable documentation in the echo area
-  ;; (corfu-scroll-margin 5)        ;; Use scroll margin
+(use-package doom-modeline
+  :ensure t
+  :init (doom-modeline-mode 1)
+  :custom ((doom-modeline-height 15)))
 
-  ;; You may want to enable Corfu only for certain modes.
-  ;; :hook ((prog-mode . corfu-mode)
-  ;;        (shell-mode . corfu-mode)
-  ;;        (eshell-mode . corfu-mode))
-
-  ;; Recommended: Enable Corfu globally.
-  ;; This is recommended since dabbrev can be used globally (M-/).
-  :init
-  (corfu-global-mode)) 
-;;; IMPROVE THE CODING EXPIRENCE
+;; rainbow parrent
+(use-package rainbow-delimiters
+  :hook (prog-mode . rainbow-delimiters-mode))
+;; add leftside line number when in coding mode
+(add-hook 'prog-mode-hook #'display-line-numbers-mode)
 
 (use-package which-key
   :init (which-key-mode)
   :diminish which-key-mode
   :config
   (setq which-key-idle-delay 0.3))
+
+;;;Vertical is for simple completion
+(use-package vertico
+  :config
+  (vertico-mode))
 
 (use-package ivy
   :diminish
@@ -168,25 +136,7 @@
   :ensure t
   :after (ivy counsel)
   :init (ivy-rich-mode 1))
- 
-;;; SYNTAX UI etc.
-(use-package doom-modeline
-  :ensure t
-  :init (doom-modeline-mode 1)
-  :custom ((doom-modeline-height 15)))
 
-;; rainbow parrent
-(use-package rainbow-delimiters
-  :hook (prog-mode . rainbow-delimiters-mode))
-
-;; HOOKS
-;; add leftside line number when in coding mode
-(add-hook 'prog-mode-hook #'display-line-numbers-mode)
-
-;; If a quote might be a function, better use #'; because ' loop first into a symbol and then a funcion; while #' look direcly into a symbo
-
-
-;;orgmode settings
 (global-set-key (kbd "C-c l") #'org-store-link)
 (global-set-key (kbd "C-c a") #'org-agenda)
 (global-set-key (kbd "C-c c") #'org-capture)
@@ -205,7 +155,6 @@
       org-highlight-latex-and-related '(native script entities))
 (use-package mixed-pitch
   :hook (org-mode . mixed-pitch-mode))
-(use-package gnuplot)
 
 ;; active Babel languages
 (org-babel-do-load-languages
@@ -222,6 +171,10 @@
    (lisp . t)
    (haskell . t)
    (emacs-lisp . t)))
+(use-package gnuplot)
+(use-package sly)
+(use-package plantuml-mode)
+(use-package lua-mode)
 
 ;; orgmode export latex template
 (with-eval-after-load 'ox-latex
@@ -289,6 +242,18 @@
   ;; If using org-roam-protocol
   (require 'org-roam-protocol))
 
+;; latex
+(use-package cdlatex
+  :bind (:map cdlatex-mode-map
+	 ("C-c C-{" . nil)
+	 ("C-c C-," . cdlatex-environment))
+  :hook (LaTeX-mode . cdlatex-mode))
+(use-package auctex-latexmk
+  :config
+  (auctex-latexmk-setup))
+(Use-package evil-tex
+  :hook (LaTeX-mode . evil-tex-mode))
+(add-hook 'LaTeX-mode-hook 'turn-on-auto-fill) ; 在latex模式下输入文字自动换行
 
 ;; INPUT METHOD
 
@@ -306,22 +271,6 @@
       :file "~/.config/emacs/pyim-greatdict.pyim.gz"
       :coding utf-8-unix
       :dict-type pinyin-dict)))
-
-;; languages
-(use-package sly)
-(use-package plantuml-mode)
-
-;; latex
-(use-package cdlatex
-  :bind (:map latex-mode-map
-	 ("C-c C-," . cdlatex-environment))
-  :hook (LaTeX-mode . cdlatex-mode))
-(use-package auctex-latexmk
-  :config
-  (auctex-latexmk-setup))
-(use-package evil-tex
-  :hook (LaTex-mode . evil-tex-mode))
-(add-hook 'LaTeX-mode-hook 'turn-on-auto-fill) ; 在latex模式下输入文字自动换行
 
 ;; 文件管理器
 (use-package dired

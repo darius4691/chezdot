@@ -138,7 +138,7 @@
         top = "${pkgs.htop}/bin/htop";
         ".." = "cd ..";
         cat = "${pkgs.bat}/bin/bat --paging=never";
-        e = "emacsclient --no-wait --alternate-editor=\"\"";
+        e = "emacsclient --no-wait --create-frame --alternate-editor=\"\"";
       };
       plugins = [
         {
