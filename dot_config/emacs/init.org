@@ -1,0 +1,906 @@
+#+title: 工作用文本编辑器的选择于配置
+#+author: 黄耀庭
+#+PROPERTY: header-args:emacs-lisp :tangle ~/.config/emacs/init.el :mkdirp yes
+#+PROPERTY: header-args:lua :tangle ~/.config/nvim/iinit.lua :mkdirp yes
+
+* 起源
+作为一個科技工作者, 在
+
+* Neovim
+** Native
+#+begin_src lua
+-- vim:foldmethod=marker
+-- README {{{
+-- Install packer first
+-- Unix-like:
+--   git clone --depth 1 https://github.com/wbthomason/packer.nvim ~/.local/share/nvim/site/pack/packer/start/packer.nvim
+-- Windows(PowerShell):
+--   git clone https://github.com/wbthomason/packer.nvim "$env:LOCALAPPDATA\nvim-data\site\pack\packer\start\packer.nvim"
+-- }}}
+
+-- Defaults {{{
+vim.opt.number = true                               -- show line numbers
+vim.opt.ruler = true
+vim.opt.ttyfast = true                              -- terminal acceleration
+vim.opt.tabstop = 4
+vim.opt.shiftwidth = 4
+vim.opt.smarttab = true                             -- set tabs for a shifttabs logic
+vim.opt.expandtab = true
+vim.opt.autoindent = true                           -- indent when moving to the next line while writing code
+vim.opt.cursorline = true                           -- shows line under the cursor's line
+vim.opt.showmatch = true                            -- shows matching part of bracket pairs (), [], {}
+vim.opt.enc = 'utf-8'                               -- utf-8 by default
+vim.opt.backspace = 'indent,eol,start'              -- backspace removes all (indents, EOLs, start) What is start?
+vim.opt.scrolloff = 10                              -- let 10 lines before/after cursor during scroll
+vim.opt.clipboard = 'unnamedplus'                   -- use system clipboard
+vim.opt.hidden = true                               -- textEdit might fail if hidden is not set.
+vim.opt.backup = false                              -- some servers have issues with backup files, see #649.
+vim.opt.writebackup = false
+vim.opt.cmdheight = 2                               -- give more space for displaying messages.
+vim.opt.updatetime = 300                            -- reduce updatetime (default is 4000 ms = 4 s) leads to noticeable
+vim.opt.iskeyword:append{'-'}                       -- treat dash separated words as a word text object"
+vim.opt.signcolumn = 'yes'                          -- Always show the signcolumn, otherwise it would shift the text each time diagnostics appear/become resolved.
+vim.opt.showmode = false                            -- compatible with lightline
+vim.opt.showtabline = 2                             -- show tab line always
+vim.opt.list = true                                 -- show invisible characters
+vim.opt.listchars = 'tab:>-,trail:~'                -- list symbols, extends,precedes are useless if warp is on
+vim.opt.foldnestmax = 1                             -- only fold top level
+vim.opt.foldmethod = 'syntax'                       -- fold by syntax
+
+vim.opt.termguicolors = true                        -- enable true color
+vim.opt.completeopt = 'menu,menuone,noselect'       -- completion menu options
+vim.opt.pumheight = 7                               -- limit the completion menu height
+vim.opt.grepprg = "rg --vimgrep --no-heading --smart-case" -- use ripgrep for completion
+vim.opt.helplang = "cn,en"
+
+vim.opt.cscopequickfix = 's-,c-,d-,i-,t-,e-,a-'
+vim.opt.cscopeverbose = false
+vim.opt.omnifunc = "v:lua.vim.lsp.omnifunc"         -- use lsp for omni completion
+
+vim.api.nvim_set_var('loaded_python_provider', 0)   -- disable python2 support
+vim.api.nvim_set_keymap('t', '<Esc>', '<C-\\><C-n>', {noremap = true})
+vim.api.nvim_set_keymap('n', ']l', '<CMD>lnext<CR>', {noremap = true})
+vim.api.nvim_set_keymap('n', '[l', '<CMD>lprev<CR>', {noremap = true})
+vim.api.nvim_set_keymap('n', ']f', '<CMD>cnext<CR>', {noremap = true})
+vim.api.nvim_set_keymap('n', '[f', '<CMD>cprev<CR>', {noremap = true})
+vim.api.nvim_set_keymap('n', '<C-_>s', '<CMD>cs f s <cword><CR>', {noremap = true})
+vim.api.nvim_set_keymap('n', '<C-_>g', '<CMD>cs f g <cword><CR>', {noremap = true})
+vim.api.nvim_set_keymap('n', '<C-_>c', '<CMD>cs f c <cword><CR>', {noremap = true})
+vim.api.nvim_set_keymap('n', '<C-_>t', '<CMD>cs f t <cword><CR>', {noremap = true})
+vim.api.nvim_set_keymap('n', '<C-_>e', '<CMD>cs f e <cword><CR>', {noremap = true})
+vim.api.nvim_set_keymap('n', '<C-_>f', '<CMD>cs f f <cfile><CR>', {noremap = true})
+vim.api.nvim_set_keymap('n', '<C-_>i', '<CMD>cs f i <cfile><CR>', {noremap = true})
+vim.api.nvim_set_keymap('n', '<C-_>d', '<CMD>cs f d <cword><CR>', {noremap = true})
+vim.api.nvim_set_keymap('n', '<C-_>a', '<CMD>cs f a <cword><CR>', {noremap = true})
+vim.cmd('syntax enable')                            -- syntax highlight
+vim.cmd('autocmd TermOpen * setlocal nonumber norelativenumber' )  -- disable line number in terminal mode
+-- vim.diagnostic.setloclist()
+--: }}}
+
+vim.cmd("command! ReloadInit :luafile " .. vim.fn.stdpath("config") .. "/init.lua")
+
+#+end_src
+
+** Packer
+#+begin_src lua
+-- Plugins and Packer {{{
+require('packer').startup(function(use)
+    -- Packer itself
+    use 'wbthomason/packer.nvim'
+    -- LSP and debugger {{{
+    use { 'L3MON4D3/LuaSnip' }
+    use {
+        'hrsh7th/nvim-cmp',
+        requires = {
+            'hrsh7th/cmp-path',
+            'hrsh7th/cmp-buffer',
+            'hrsh7th/cmp-nvim-lsp',
+            'hrsh7th/cmp-path',
+            'hrsh7th/cmp-cmdline',
+            'saadparwaiz1/cmp_luasnip'
+        },
+        config = function()
+            local has_words_before = function()
+                local line, col = unpack(vim.api.nvim_win_get_cursor(0))
+                return col ~= 0 and vim.api.nvim_buf_get_lines(0, line - 1, line, true)[1]:sub(col, col):match("%s") == nil
+            end
+
+            local luasnip = require("luasnip")
+            local cmp = require("cmp")
+            cmp.setup{
+                snippet = {
+                    expand = function(args)
+                        luasnip.lsp_expand(args.body)
+                    end
+                },
+                sources = cmp.config.sources({
+                    {name = "nvim_lsp"},
+                    {name = "luasnip"},
+                    {name = "path"},
+                    {name = "buffer"},
+                }),
+                mapping = {
+                    ["<Tab>"] = cmp.mapping(
+                        function(fallback)
+                            if cmp.visible() then
+                                cmp.select_next_item()
+                            elseif luasnip.expand_or_jumpable() then
+                                luasnip.expand_or_jump()
+                            elseif has_words_before() then
+                                cmp.complete()
+                            else
+                                fallback()
+                            end
+                        end, { "i", "s" }),
+                    ["<S-Tab>"] = cmp.mapping(
+                        function(fallback)
+                            if cmp.visible() then
+                                cmp.select_prev_item()
+                            elseif luasnip.jumpable(-1) then
+                                luasnip.jump(-1)
+                            else
+                                fallback()
+                            end
+                        end, { "i", "s" }),
+                    ['<CR>'] = cmp.mapping.confirm({ select = false })
+                },
+            }
+            cmp.setup.cmdline(':', {
+                sources = cmp.config.sources({
+                   { name = 'cmdline' }
+                }, {
+                   { name = 'path' },
+                   { name = 'buffer' }
+                })
+            })
+        end
+    }
+
+    use {'neovim/nvim-lspconfig',
+        config = function()
+            local capabilities = vim.lsp.protocol.make_client_capabilities()
+            local lspconfig = require'lspconfig'
+            capabilities = require('cmp_nvim_lsp').update_capabilities(capabilities)
+            lspconfig.pyright.setup{capabilities=capabilities}
+            lspconfig.gopls.setup{capabilities=capabilities}
+            lspconfig.clangd.setup{
+                capabilities = capabilities,
+                autostart = false,
+            }
+            lspconfig.jsonls.setup{capabilities=capabilities}
+            lspconfig.sumneko_lua.setup{
+                capabilities = capabilities,
+                settings = {
+                    Lua = {
+                        runtime = { version = 'LuaJIT' },
+                        diagnostics = { globals = {'vim'} },
+                        workspace = {
+                            library = vim.api.nvim_get_runtime_file("", true),
+                        },
+                        telemetry = { enable = false, },
+                    },
+                }
+            }
+        end
+    }
+
+    use {
+        'mfussenegger/nvim-dap',
+        config = function()
+            vim.fn.sign_define('DapBreakpoint',          { text='', texthl='DapBreakpoint', linehl='',            numhl='DapBreakpoint'  })
+            vim.fn.sign_define('DapBreakpointCondition', { text='ﳁ', texthl='DapBreakpoint', linehl='',            numhl='DapBreakpoint'  })
+            vim.fn.sign_define('DapBreakpointRejected',  { text='', texthl='DapBreakpoint', linehl='',            numhl= 'DapBreakpoint' })
+            vim.fn.sign_define('DapLogPoint',            { text='', texthl='DapLogPoint',   linehl='DapLogPoint', numhl= 'DapLogPoint'   })
+            vim.fn.sign_define('DapStopped',             { text='', texthl='DapStopped',    linehl='DapStopped',  numhl= 'DapStopped'    })
+            local repl = require 'dap.repl'
+            local dap = require 'dap'
+            repl.commands = vim.tbl_extend(
+                'force', repl.commands, {
+                    frames = {'.frames', '.f'},
+                    scopes = {'.scopes', '.s'},
+                    custom_commands = {
+                        -- conditional breakpoints
+                        ['.bb'] = dap.set_breakpoint,
+                        ['.terminate'] = dap.terminate,
+                        ['.restart'] = dap.restart,
+                    }
+                }
+            )
+        end
+    }
+    use {
+        'mfussenegger/nvim-lint',
+        config = function()
+            local lint = require('lint')
+            lint.linters_by_ft = {
+              cpp = {'cppcheck'},
+              c = {'cppcheck'}
+            }
+            vim.cmd("command! Lint :lua require('lint').try_lint()<CR>")
+        end
+    }
+
+    -- LSP and debugger}}}
+    -- UI and theme {{{
+    -- nix highlight
+    use {
+        'LnL7/vim-nix',
+        ft = {"nix"}
+    }
+
+    use {
+        'folke/tokyonight.nvim',
+        config = function()
+            vim.g.tokyonight_style = "night"
+        end
+    }
+    use {'sainnhe/everforest'}
+    use {
+        'navarasu/onedark.nvim',
+        config = function()
+            vim.cmd[[
+            colorscheme everforest
+            highlight DapBreakpoint ctermbg=0 guifg=#993939 guibg=#31353f
+            highlight DapLogPoint   ctermbg=0 guifg=#61afef guibg=#31353f
+            highlight DapStopped    ctermbg=0 guifg=#98c379 guibg=#31353f
+            ]]
+
+        end
+    }
+
+    --- lualine
+    use {'hoob3rt/lualine.nvim',
+        requires = {'kyazdani42/nvim-web-devicons', opt = true},
+        config = function()
+            require('lualine').setup{
+                options = {
+                    component_separators = { left = '', right = '' },
+                    section_separators = { left = '', right = '' },
+                },
+                tabline = {
+                    lualine_a = {"tabs"},
+                    lualine_z = {"buffers"},
+                },
+                extensions = {'fugitive', 'quickfix'}
+            }
+        end
+    }
+    --- }}}
+    -- tools {{{
+    -- git integration
+    use 'tpope/vim-fugitive' -- align
+    use 'tpope/vim-surround'
+    use 'tpope/vim-repeat' -- enable repeating supported plugin maps with .
+    use 'junegunn/vim-easy-align' -- <count>ai ii aI iI indent level
+    use 'michaeljsmith/vim-indent-object' -- quoting/parenthesizing
+    use 'jiangmiao/auto-pairs' -- colorize hex color code for quick theme configuration
+    use { "norcalli/nvim-colorizer.lua" ,
+        config = function()
+            require"colorizer".setup{
+                "xdefaults";
+                "conf";
+                "dosini"
+            }
+        end
+    }
+
+    use {
+        "darius4691/nvim-projectconfig",
+        config = function()
+            require("nvim-projectconfig").setup{}
+        end
+    }
+
+    -- tags auto generating
+    use {
+        "ludovicchabant/vim-gutentags",
+        config = function()
+            local set_var_list = function(var_pairs)
+                for k, v in pairs(var_pairs) do
+                    vim.api.nvim_set_var(k, v)
+                end
+            end
+            local tag_cache_dir = vim.fn.stdpath('cache') .. '/tags'
+            if not vim.fn.isdirectory(tag_cache_dir) then
+                vim.fn.mkdir(tag_cache_dir, 'p')
+            end
+            set_var_list({
+                gutentags_project_root = {
+                    '.root', '.svn', '.git', '.hg', '.project'
+                },
+                gutentags_ctags_tagfile = '.tags',
+                gutentags_cache_dir = tag_cache_dir,
+                gutentags_ctags_extra_args = {
+                    '--fields=+niazS',
+                    '--extras=+fq',
+                    '--kinds-C=+px',
+                    '--kinds-C++=+px',
+                    '--output-format=e-ctags'
+                },
+                gutentags_modules = { 'ctags', 'cscope' },
+                gutentags_define_advanced_commands = 1;
+                gutentags_file_list_command = "find . -name " .. table.concat(
+                { '"*.c"', '"*.cpp"', '"*.h"', '"*.py"', '"*.lua"', '"*.go"'},
+                " -o -name "
+                );
+            })
+        end
+    }
+
+    -- Treesitter and highlight
+    use {
+        'nvim-treesitter/nvim-treesitter',
+        requires = {
+            'p00f/nvim-ts-rainbow',
+            'nvim-treesitter/nvim-treesitter-refactor'
+        },
+        run = ':TSUpdate',
+        config = function()
+            require'nvim-treesitter.configs'.setup{
+                ensure_installed = { "python", "go", "json", "bash", "lua", "c", "cpp" },
+                highlight = {
+                    enable = true,
+                    additional_vim_regex_highlighting = false,
+                },
+                incremental_selection = {
+                    enable = true,
+                    keymaps = {
+                        init_selection = "gnn",
+                        node_incremental = "}",
+                        scope_incremental = "grc",
+                        node_decremental = "{",
+                    },
+                },
+                refactor = {
+                    highlight_definitions = {enable = true},
+                    highlight_current_scope = {enable = true},
+                },
+                rainbow = {
+                  enable = true,
+                  extended_mode = true, -- Also highlight non-bracket delimiters like html tags, boolean or table: lang -> boolean
+                  max_file_lines = 10000, -- Do not enable for files with more than n lines, int
+                }
+            }
+        end
+    }
+
+    -- debug virtual text
+    use {
+        'theHamsta/nvim-dap-virtual-text',
+        config = function()
+            require("nvim-dap-virtual-text").setup()
+        end
+    }
+    --- hightlight
+    use {
+        "folke/todo-comments.nvim",
+        requires = "nvim-lua/plenary.nvim",
+        config = function()
+            require("todo-comments").setup()
+        end
+    }
+
+    use {'lewis6991/gitsigns.nvim', requires = {'nvim-lua/plenary.nvim'},
+        config = function()
+            require('gitsigns').setup()
+        end
+    }
+    -- telescope
+    use {
+        "nvim-telescope/telescope.nvim",
+        requires = {
+            "nvim-lua/popup.nvim",
+            "nvim-lua/plenary.nvim",
+            "nvim-telescope/telescope-dap.nvim",
+            "ahmedkhalf/project.nvim",
+            "nvim-telescope/telescope-file-browser.nvim"
+        },
+        config = function()
+            require("project_nvim").setup {
+                manual_mode = true
+            }
+            local ts = require("telescope")
+            local actions = require "telescope.actions"
+            ts.setup {
+                pickers = {
+                    quickfix = { theme = "dropdown" },
+                    loclist = { theme = "dropdown" },
+                    marks = { theme = "ivy" },
+                    current_buffer_fuzzy_find = { theme = "ivy" },
+                    find_files = { hidden = true },
+                    commands = { theme = "ivy" },
+                    buffers = {
+                        mappings = {
+                            i = {
+                                ["<c-d>"] = actions.delete_buffer,
+                            }
+                        }
+                    }
+                }
+            }
+            ts.load_extension('dap')
+            ts.load_extension('projects')
+            ts.load_extension('file_browser')
+        end
+    }
+    -- }}}
+    -- Key Mappings {{{
+    use {
+        "folke/which-key.nvim",
+        config = function()
+            local wk = require("which-key")
+            local te = require('telescope')
+            local ts = require("telescope.builtin")
+            -- local bl = require("bufferline")
+            local dap = require("dap")
+            wk.register({
+                b = {ts.buffers, "Buffers"},
+                d = {
+                    name = 'DapList',
+                    c = {te.extensions.dap.commands, "Commands"},
+                    s = {te.extensions.dap.configuration, "Settings(cfg)"},
+                    b = {te.extensions.dap.list_breakpoints, "BreakPoints"},
+                    v = {te.extensions.dap.variables, "Variables"},
+                    f = {te.extensions.dap.frames, "Frames(stack)"},
+                    o = {dap.repl.open, "DapREPL"},
+                    V = {function()
+                        local widgets = require('dap.ui.widgets')
+                        widgets.centered_float(widgets.scopes)
+                    end, "ScopeWidget"},
+                    F = {function()
+                        local widgets = require('dap.ui.widgets')
+                        widgets.centered_float(widgets.frames)
+                    end, "FrameWidget"},
+                },
+                g = {ts.grep_string, "GrepCword"},
+                h = {ts.help_tags, "HelpTag"},
+                l = {ts.loclist, "LocList"},
+                m = {ts.marks, "VimMarks"},
+                c = {ts.quickfix, "QuickFix"},
+                f = {ts.find_files, "OpenFile"},
+                p = {ts.diagnostics, "Diagnostics"},
+                r = {ts.lsp_references, "ListReferences"},
+                t = {ts.treesitter, "TreesitterObject"},
+                B = {dap.toggle_breakpoint, "DapBreak"},
+                C = {dap.continue, "DapContinue"},
+                D = {ts.lsp_document_symbols, "DocumentSymbol"},
+                F = {te.extensions.file_browser.file_browser, "FileBrowser"},
+                M = {"<Cmd>TodoTelescope<Cr>", "TODOs"},
+                P = {te.extensions.projects.projects, "Project"},
+                S = {vim.lsp.buf.rename, "RenameVariable"},
+                T = {vim.lsp.buf.formatting, "Formatting"},
+                ["."] = {ts.resume, "Resume"},
+                [":"] = {ts.commands, "Commands"},
+                ["]"] = {vim.diagnostic.goto_prev, "NextDiag"},
+                ["["] = {vim.diagnostic.goto_next, "PrevDiag"},
+                ["/"] = {ts.current_buffer_fuzzy_find, "FindCurrent"},
+                ["?"] = {ts.live_grep, "LiveGrep"},
+                ["1"] = {"1gt", "which_key_ignore"},
+                ["2"] = {"2gt", "which_key_ignore"},
+                ["3"] = {"3gt", "which_key_ignore"},
+                ["4"] = {"4gt", "which_key_ignore"},
+                ["5"] = {"5gt", "which_key_ignore"},
+                ["6"] = {"6gt", "which_key_ignore"},
+                ["7"] = {"7gt", "which_key_ignore"},
+                ["8"] = {"8gt", "which_key_ignore"},
+                ["9"] = {"9gt", "which_key_ignore"},
+                }, {prefix="<space>"})
+            wk.register({g={
+                d={ts.lsp_definitions, "GoToDef"},
+                D={ts.lsp_type_definitions, "GoToTypeDef"},
+            }})
+            -- which-key hijacked telescope C-r paste buffer command
+            vim.api.nvim_exec([[
+                augroup telescope
+                    autocmd!
+                    autocmd FileType TelescopePrompt inoremap <buffer> <silent> <C-r> <C-r>
+                augroup END]], false)
+      end
+    }
+    -- }}}
+
+end)
+--}}}
+#+end_src
+* Emacs
+** 开始
+*** EMACS CUSTOM
+在载入颜色主题和 package 时, emacs 会在 init.el 里自动创建配置代码, 这里提前载入这些
+#+begin_src emacs-lisp
+(setq custom-file "~/.config/emacs/custom.el")
+(load custom-file)
+#+end_src
+
+*** 设置个人信息
+设置个人信息; 其中邮箱主要用于gpg加密相关进程
+#+begin_src emacs-lisp
+(setq user-full-name "黄耀庭"
+      user-mail-address "dariush4691@outlook.com")
+#+end_src
+*** 设置字体
+设置字体, 注意如果emacs使用守护进程的方式启动, 需要使用把字体设置加入HOOK中
+#+begin_src emacs-lisp
+(defvar darius/default-font-size 200)
+(defun darius/set-font ()
+  (set-face-attribute 'default nil :font "更纱黑体 Mono SC Nerd" :height darius/default-font-size)
+  (set-face-attribute 'variable-pitch nil :font "思源宋体" :height darius/default-font-size :weight 'regular)
+  (set-face-attribute 'fixed-pitch nil :font "更纱黑体 Mono SC Nerd" :height darius/default-font-size :weight 'regular))
+(if (daemonp)
+    (add-hook 'server-after-make-frame-hook #'darius/set-font)
+    (darius/set-font))
+#+end_src
+*** 软件源设置
+#+begin_src emacs-lisp
+(require 'package) ; This should be autoloaded. I'm putting this line here just in case not.
+(setq package-archives '(("melpa" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/")
+			 ("org" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/org/")
+			 ("elpa" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/gnu/")))
+(package-initialize)
+(unless package-archive-contents
+ (package-refresh-contents))
+#+end_src
+*** 初始界面设置
+#+begin_src emacs-lisp
+(setq inhibit-startup-message t)
+(scroll-bar-mode -1)        ; Disable visible scrollbar
+(tool-bar-mode -1)          ; Disable the toolbar
+(tooltip-mode -1)           ; Disable tooltips
+(set-fringe-mode 10)        ; Give some breathing room, modify the spacing 
+(menu-bar-mode -1)          ; Disable the menu bar
+(setq visible-bell t)       ; do not sound the bell. Instead, use visual blink
+(electric-pair-mode)        ; toggle auto-pair-mode
+#+end_src
+** 使用软件包
+*** =use-package=
+Bootstrip use-package
+#+begin_src emacs-lisp
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+(eval-when-compile (require 'use-package))
+(setq use-package-always-ensure t)
+#+end_src
+
+** 提升操作体验
+*** EVIL mode
+vim style undo not needed for emacs 28
+#+begin_src emacs-lisp
+(use-package undo-fu)
+(use-package evil
+  :demand t
+  :bind (("<escape>" . keyboard-escape-quit))
+  :init
+  ;; allows for using cgn
+  ;; (setq evil-search-module 'evil-search)
+  (setq evil-want-keybinding nil)
+  ;; no vim insert bindings
+  (setq evil-undo-system 'undo-fu)
+  :config
+  (evil-mode 1)
+  (evil-set-leader nil (kbd "C-;"))
+  (evil-set-leader 'normal (kbd "SPC"))
+  (evil-set-leader 'normal "\\" t) ;Set localleader if last arg is non-nil 
+  )
+#+end_src
+
+vim key bindings everywhere else
+#+begin_src emacs-lisp
+(use-package evil-collection
+  :after evil
+  :config
+  (setq evil-want-integration t)
+  (evil-collection-init))
+#+end_src
+
+the popular evil-surrond corresponding to vim
+#+begin_src emacs-lisp
+(use-package evil-surround
+  :ensure t
+  :config
+  (global-evil-surround-mode 1))
+#+end_src
+
+** 减轻大脑负担
+*** 使用主题
+#+begin_src emacs-lisp
+;;; Using A Eyecandy Theme
+(use-package gruvbox-theme
+  :after evil
+  :config
+  (load-theme 'gruvbox))
+#+end_src
+
+modeline
+#+begin_src emacs-lisp
+(use-package doom-modeline
+  :ensure t
+  :init (doom-modeline-mode 1)
+  :custom ((doom-modeline-height 15)))
+#+end_src
+
+彩虹括号
+#+begin_src emacs-lisp
+;; rainbow parrent
+(use-package rainbow-delimiters
+  :hook (prog-mode . rainbow-delimiters-mode))
+;; add leftside line number when in coding mode
+(add-hook 'prog-mode-hook #'display-line-numbers-mode)
+#+end_src
+
+*** which-KEY
+#+begin_src emacs-lisp
+(use-package which-key
+  :init (which-key-mode)
+  :diminish which-key-mode
+  :config
+  (setq which-key-idle-delay 0.3))
+#+end_src
+
+*** MINIBUFFER补全
+#+begin_src emacs-lisp
+;;;Vertical is for simple completion
+(use-package vertico
+  :config
+  (vertico-mode))
+#+end_src
+
+#+begin_src emacs-lisp
+(use-package ivy
+  :diminish
+  :after evil
+  :bind (:map ivy-minibuffer-map
+         ("TAB" . ivy-alt-done)	
+         ("C-l" . ivy-alt-done)
+         ("C-j" . ivy-next-line)
+         ("C-k" . ivy-previous-line)
+         :map ivy-switch-buffer-map
+         ("C-k" . ivy-previous-line)
+         ("C-l" . ivy-done)
+         ("C-d" . ivy-switch-buffer-kill)
+         :map ivy-reverse-i-search-map
+         ("C-k" . ivy-previous-line)
+         ("C-d" . ivy-reverse-i-search-kill))
+  :config
+  (ivy-mode 1)
+  (setq ivy-use-virtual-buffeers t)
+  (setq enable-recursive-minibuffers t))
+
+(use-package counsel
+  :after (evil ivy)
+  :bind (("M-x" . counsel-M-x)
+         ("C-s" . swiper)
+         ("C-x b" . counsel-ibuffer)
+         ("C-x C-f" . counsel-find-file)
+	 ("C-h f" . counsel-describe-function)
+	 ("C-h v" . counsel-describe-variable)
+	 ("C-h o" . counsel-describe-symbol)
+         :map minibuffer-local-map
+         ("C-r" . 'counsel-minibuffer-history)
+	 :map evil-normal-state-map
+	 ("<leader>b" . 'counsel-switch-buffer)
+	 ("<leader>f" . 'counsel-find-file)
+	 ("<leader>?" . 'counsel-rg)))
+
+(use-package all-the-icons-ivy-rich
+  :ensure t
+  :init (all-the-icons-ivy-rich-mode 1)) 
+
+(use-package ivy-rich
+  :ensure t
+  :after (ivy counsel)
+  :init (ivy-rich-mode 1))
+#+end_src
+
+** ORG-MODE
+*** 全局设置
+#+begin_src emacs-lisp
+(global-set-key (kbd "C-c l") #'org-store-link)
+(global-set-key (kbd "C-c a") #'org-agenda)
+(global-set-key (kbd "C-c c") #'org-capture)
+(add-hook 'org-mode-hook #'org-indent-mode) ; add virtual indentation
+#+end_src
+
+#+begin_src emacs-lisp
+(setq org-directory "~/org"
+      org-agenda-files '("~/org/agenda.org" "~/org/notes.org")
+      org-archive-location "~/org/archive.org::* From %s"
+      org-default-notes-file "~/org/notes.org"
+      org-qgenda-start-with-log-mode t
+      org-log-done 'time
+      org-log-into-drawer t
+      org-edit-src-content-indentation 0
+      org-confirm-babel-evaluate nil
+      org-babel-lisp-eval-fn #'sly-eval
+      org-highlight-latex-and-related '(native script entities))
+(use-package mixed-pitch
+  :hook (org-mode . mixed-pitch-mode))
+#+end_src
+
+*** BABEL
+#+begin_src emacs-lisp
+;; active Babel languages
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((python . t)
+   (C . t)
+   (lua . t)
+   (gnuplot . t)
+   (dot . t)
+   (plantuml . t)
+   (latex . t)
+   (shell . t)
+   (scheme . t)
+   (lisp . t)
+   (haskell . t)
+   (emacs-lisp . t)))
+(use-package gnuplot)
+(use-package sly)
+(use-package plantuml-mode)
+(use-package lua-mode)
+#+end_src
+
+*** EXPORTER
+
+#+begin_src emacs-lisp
+;; orgmode export latex template
+(with-eval-after-load 'ox-latex
+  (setq org-latex-compiler "xelatex")
+  (setq org-latex-pdf-process '("latexmk -%latex -quiet -shell-escape -f %f"))
+  (add-to-list 'org-latex-classes
+           '("myreport"
+             "\\documentclass{minereport}
+              [DEFAULT-PACKAGES]
+              [PACKAGES]
+              [EXTRA]"
+             ("\\section{%s}" . "\\section*{%s}")
+             ("\\subsection{%s}" . "\\subsection*{%s}")
+             ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+             ("\\paragraph{%s}" . "\\paragraph*{%s}")
+             ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+  (add-to-list 'org-latex-classes
+             '("elegantpaper"
+               "\\documentclass[lang=cn,11pt,a4paper,cite=authoryear,fontset=none]{elegantpaper}
+\\setCJKmainfont[BoldFont={FZHTK--GBK1-0},ItalicFont={FZKTK--GBK1-0}]{FZSSK--GBK1-0}
+\\setCJKsansfont[BoldFont={FZHTK--GBK1-0},ItalicFont={FZHTK--GBK1-0}]{FZHTK--GBK1-0}
+\\setCJKmonofont[BoldFont={FZHTK--GBK1-0},ItalicFont={FZHTK--GBK1-0}]{FZFSK--GBK1-0}
+\\setCJKfamilyfont{zhsong}{FZSSK--GBK1-0}
+\\setCJKfamilyfont{zhhei}{FZHTK--GBK1-0}
+\\setCJKfamilyfont{zhkai}{FZKTK--GBK1-0}
+\\setCJKfamilyfont{zhfs}{FZFSK--GBK1-0}
+\\newcommand*{\\songti}{\\CJKfamily{zhsong}}
+\\newcommand*{\\heiti}{\\CJKfamily{zhhei}}
+\\newcommand*{\\kaishu}{\\CJKfamily{zhkai}}
+\\newcommand*{\\fangsong}{\\CJKfamily{zhfs}}
+[DEFAULT-PACKAGES]
+[PACKAGES]
+[EXTRA]"
+               ("\\section{%s}" . "\\section*{%s}")
+               ("\\subsection{%s}" . "\\subsection*{%s}")
+               ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+               ("\\paragraph{%s}" . "\\paragraph*{%s}")
+               ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+    (setq org-latex-default-class "elegantpaper"))
+(use-package ox-pandoc
+  :config
+  (setq org-pandoc-options-for-latex-pdf
+	'((pdf-engine . "xelatex")
+	  (listings . t)
+	  (template . eisvogel)
+	  (variable . "CJKmainfont=SourceHanSansSC-Regular")
+	  (lua-filter . "no-code-attributes.lua"))))
+#+end_src
+
+*** ROAM
+#+begin_src emacs-lisp
+;; Here's a very basic sample for configuration of org-roam using use-package:
+(use-package org-roam
+  :ensure t
+  :custom
+  (org-roam-directory (file-truename "~/org-roam"))
+  :bind (("C-c n l" . org-roam-buffer-toggle)
+         ("C-c n f" . org-roam-node-find)
+         ("C-c n g" . org-roam-graph)
+         ("C-c n i" . org-roam-node-insert)
+         ("C-c n c" . org-roam-capture)
+         ;; Dailies
+         ("C-c n j" . org-roam-dailies-capture-today))
+  :config
+  ;; If you're using a vertical completion framework, you might want a more informative completion interface
+  (setq org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
+  (org-roam-db-autosync-mode)
+  ;; If using org-roam-protocol
+  (require 'org-roam-protocol))
+#+end_src
+
+** LATEX
+#+begin_src emacs-lisp
+;; latex
+(use-package cdlatex
+  :bind (:map cdlatex-mode-map
+	 ("C-c C-{" . nil)
+	 ("C-c C-," . cdlatex-environment))
+  :hook (LaTeX-mode . cdlatex-mode))
+(use-package auctex-latexmk
+  :config
+  (auctex-latexmk-setup))
+(Use-package evil-tex
+  :hook (LaTeX-mode . evil-tex-mode))
+(add-hook 'LaTeX-mode-hook 'turn-on-auto-fill) ; 在latex模式下输入文字自动换行
+#+end_src
+** 软件
+*** 输入法
+#+begin_src emacs-lisp
+;; INPUT METHOD
+
+(use-package posframe)
+
+(use-package pyim
+  :config
+  (setq pyim-page-tooltip 'posframe)
+  (setq pyim-punctuation-translate-p '(no auto yes)) ;全角半角问题
+  (setq pyim-punctuation-dict nil) ;全角半角问题
+  (setq default-input-method "pyim")
+  (pyim-default-scheme 'xiaohe-shuangpin)
+  (pyim-extra-dicts-add-dict
+    `(:name "Greatdict"
+      :file "~/.config/emacs/pyim-greatdict.pyim.gz"
+      :coding utf-8-unix
+      :dict-type pinyin-dict)))
+#+end_src
+
+*** 文件管理器
+#+begin_src emacs-lisp
+;; 文件管理器
+(use-package dired
+  :ensure nil
+  :commands (dired dired-jump)
+  :bind (("C-x C-j" . dired-jump))
+  :custom ((dired-listing-switches "-agho --group-directories-first"))
+  :config
+  (evil-collection-define-key 'normal 'dired-mode-map
+    "h" 'dired-single-up-directory
+    "l" 'dired-single-buffer))
+
+(use-package dired-single
+  :commands (dired dired-jump))
+
+(use-package all-the-icons-dired
+  :hook (dired-mode . all-the-icons-dired-mode))
+
+(use-package dired-open
+  :commands (dired dired-jump)
+  :config
+  ;; Doesn't work as expected!
+  ;;(add-to-list 'dired-open-functions #'dired-open-xdg t)
+  (setq dired-open-extensions '(("png" . "feh")
+                                ("mkv" . "mpv"))))
+
+(use-package dired-hide-dotfiles
+  :hook (dired-mode . dired-hide-dotfiles-mode)
+  :config
+  (evil-collection-define-key 'normal 'dired-mode-map
+    "H" 'dired-hide-dotfiles-mode))
+#+end_src
+
+** 软件试验场
+#+begin_src emacs-lisp
+(use-package ggtags)
+(use-package call-graph
+  :config
+  (evil-define-key 'normal call-graph-mode
+    "e" 'cg-widget-expand-all
+    "c" 'cg-widget-collapse-all
+    "p" 'widget-backward
+    "n" 'widget-forward
+    "q" 'cg-quit
+    "+" 'cg-expand
+    "_" 'cg-collapse
+    "o" 'cg-goto-file-at-point
+    "g" 'cg-at-point
+    "d" 'cg-remove-caller
+    "l" 'cg-select-caller-location
+    "r" 'cg-reset-caller-cache
+    "t" 'cg-toggle-show-func-args
+    "f" 'cg-toggle-invalid-reference
+    (kbd "<RET>") 'cg-goto-file-at-point))
+#+end_src
