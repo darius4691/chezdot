@@ -12,7 +12,7 @@
     # required by neovim and common tools
     direnv starship
     luajit sumneko-lua-language-server
-    shellcheck aspell
+    shellcheck aspell luaformatter
     # COMMANDLINE TOOLS
     fd ripgrep bat exa fzf zoxide
     wget tree jq perl rename

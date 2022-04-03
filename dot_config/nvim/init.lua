@@ -6,6 +6,17 @@
 -- Windows(PowerShell):
 --   git clone https://github.com/wbthomason/packer.nvim "$env:LOCALAPPDATA\nvim-data\site\pack\packer\start\packer.nvim"
 -- }}}
+-- HELPER FUNCTION {{{
+function Dolist(list, func)
+    for _, item in ipairs(list) do
+        if type(item) == "table" then
+            func(unpack(item))
+        else
+            func(item)
+        end
+    end
+end
+-- }}}
 
 -- Defaults {{{
 vim.opt.number = true                               -- show line numbers
@@ -45,208 +56,153 @@ vim.opt.helplang = "cn,en"
 vim.opt.cscopequickfix = 's-,c-,d-,i-,t-,e-,a-'
 vim.opt.cscopeverbose = false
 vim.opt.omnifunc = "v:lua.vim.lsp.omnifunc"         -- use lsp for omni completion
-
 vim.api.nvim_set_var('loaded_python_provider', 0)   -- disable python2 support
-vim.api.nvim_set_keymap('t', '<Esc>', '<C-\\><C-n>', {noremap = true})
-vim.api.nvim_set_keymap('n', ']l', '<CMD>lnext<CR>', {noremap = true})
-vim.api.nvim_set_keymap('n', '[l', '<CMD>lprev<CR>', {noremap = true})
-vim.api.nvim_set_keymap('n', ']f', '<CMD>cnext<CR>', {noremap = true})
-vim.api.nvim_set_keymap('n', '[f', '<CMD>cprev<CR>', {noremap = true})
-vim.api.nvim_set_keymap('n', '<C-_>s', '<CMD>cs f s <cword><CR>', {noremap = true})
-vim.api.nvim_set_keymap('n', '<C-_>g', '<CMD>cs f g <cword><CR>', {noremap = true})
-vim.api.nvim_set_keymap('n', '<C-_>c', '<CMD>cs f c <cword><CR>', {noremap = true})
-vim.api.nvim_set_keymap('n', '<C-_>t', '<CMD>cs f t <cword><CR>', {noremap = true})
-vim.api.nvim_set_keymap('n', '<C-_>e', '<CMD>cs f e <cword><CR>', {noremap = true})
-vim.api.nvim_set_keymap('n', '<C-_>f', '<CMD>cs f f <cfile><CR>', {noremap = true})
-vim.api.nvim_set_keymap('n', '<C-_>i', '<CMD>cs f i <cfile><CR>', {noremap = true})
-vim.api.nvim_set_keymap('n', '<C-_>d', '<CMD>cs f d <cword><CR>', {noremap = true})
-vim.api.nvim_set_keymap('n', '<C-_>a', '<CMD>cs f a <cword><CR>', {noremap = true})
 vim.cmd('syntax enable')                            -- syntax highlight
 vim.cmd('autocmd TermOpen * setlocal nonumber norelativenumber' )  -- disable line number in terminal mode
+
+Dolist({
+    {'t', '<Esc>', '<C-\\><C-n>', {noremap = true}},
+    {'n', ']l', '<CMD>lnext<CR>', {noremap = true}},
+    {'n', '[l', '<CMD>lprev<CR>', {noremap = true}},
+    {'n', ']f', '<CMD>cnext<CR>', {noremap = true}},
+    {'n', '[f', '<CMD>cprev<CR>', {noremap = true}},
+    {'n', '<C-_>s', '<CMD>cs f s <cword><CR>', {noremap = true}},
+    {'n', '<C-_>g', '<CMD>cs f g <cword><CR>', {noremap = true}},
+    {'n', '<C-_>c', '<CMD>cs f c <cword><CR>', {noremap = true}},
+    {'n', '<C-_>t', '<CMD>cs f t <cword><CR>', {noremap = true}},
+    {'n', '<C-_>e', '<CMD>cs f e <cword><CR>', {noremap = true}},
+    {'n', '<C-_>f', '<CMD>cs f f <cfile><CR>', {noremap = true}},
+    {'n', '<C-_>i', '<CMD>cs f i <cfile><CR>', {noremap = true}},
+    {'n', '<C-_>d', '<CMD>cs f d <cword><CR>', {noremap = true}},
+    {'n', '<C-_>a', '<CMD>cs f a <cword><CR>', {noremap = true}}
+}, vim.api.nvim_set_keymap)
+
 -- vim.diagnostic.setloclist()
 --: }}}
-
 vim.cmd("command! ReloadInit :luafile " .. vim.fn.stdpath("config") .. "/init.lua")
-
 local packer = require('packer')
 packer.init()
--- Plugins and Packer {{{
--- Packer itself
 packer.use 'wbthomason/packer.nvim'
--- LSP and debugger {{{
-packer.use { 'L3MON4D3/LuaSnip' }
+-- Completion {{{
+packer.use {'L3MON4D3/LuaSnip'}
 packer.use {
     'hrsh7th/nvim-cmp',
     requires = {
-        'hrsh7th/cmp-path',
-        'hrsh7th/cmp-buffer',
-        'hrsh7th/cmp-nvim-lsp',
-        'hrsh7th/cmp-path',
-        'hrsh7th/cmp-cmdline',
-        'saadparwaiz1/cmp_luasnip'
+        'hrsh7th/cmp-path', 'hrsh7th/cmp-buffer', 'hrsh7th/cmp-nvim-lsp',
+        'hrsh7th/cmp-path', 'hrsh7th/cmp-cmdline', 'saadparwaiz1/cmp_luasnip'
     },
     config = function()
         local has_words_before = function()
             local line, col = unpack(vim.api.nvim_win_get_cursor(0))
-            return col ~= 0 and vim.api.nvim_buf_get_lines(0, line - 1, line, true)[1]:sub(col, col):match("%s") == nil
+            return col ~= 0 and
+                       vim.api.nvim_buf_get_lines(0, line - 1, line, true)[1]:sub(
+                           col, col):match("%s") == nil
         end
 
         local luasnip = require("luasnip")
         local cmp = require("cmp")
-        cmp.setup{
+        cmp.setup {
             snippet = {
                 expand = function(args)
                     luasnip.lsp_expand(args.body)
                 end
             },
             sources = cmp.config.sources({
-                {name = "nvim_lsp"},
-                {name = "luasnip"},
-                {name = "path"},
-                {name = "buffer"},
+                {name = "nvim_lsp"}, {name = "luasnip"}, {name = "path"},
+                {name = "buffer"}
             }),
             mapping = {
-                ["<Tab>"] = cmp.mapping(
-                    function(fallback)
-                        if cmp.visible() then
-                            cmp.select_next_item()
-                        elseif luasnip.expand_or_jumpable() then
-                            luasnip.expand_or_jump()
-                        elseif has_words_before() then
-                            cmp.complete()
-                        else
-                            fallback()
-                        end
-                    end, { "i", "s" }),
-                ["<S-Tab>"] = cmp.mapping(
-                    function(fallback)
-                        if cmp.visible() then
-                            cmp.select_prev_item()
-                        elseif luasnip.jumpable(-1) then
-                            luasnip.jump(-1)
-                        else
-                            fallback()
-                        end
-                    end, { "i", "s" }),
-                ['<CR>'] = cmp.mapping.confirm({ select = false })
-            },
+                ["<Tab>"] = cmp.mapping(function(fallback)
+                    if cmp.visible() then
+                        cmp.select_next_item()
+                    elseif luasnip.expand_or_jumpable() then
+                        luasnip.expand_or_jump()
+                    elseif has_words_before() then
+                        cmp.complete()
+                    else
+                        fallback()
+                    end
+                end, {"i", "s"}),
+                ["<S-Tab>"] = cmp.mapping(function(fallback)
+                    if cmp.visible() then
+                        cmp.select_prev_item()
+                    elseif luasnip.jumpable(-1) then
+                        luasnip.jump(-1)
+                    else
+                        fallback()
+                    end
+                end, {"i", "s"}),
+                ['<CR>'] = cmp.mapping.confirm({select = false})
+            }
         }
         cmp.setup.cmdline(':', {
-            sources = cmp.config.sources({
-               { name = 'cmdline' }
-            }, {
-               { name = 'path' },
-               { name = 'buffer' }
-            })
+            sources = cmp.config.sources({{name = 'cmdline'}},
+                                         {{name = 'path'}, {name = 'buffer'}})
         })
     end
 }
-
-packer.use {'neovim/nvim-lspconfig',
+-- }}}
+-- LSP {{{
+packer.use {
+    'neovim/nvim-lspconfig',
     config = function()
         local capabilities = vim.lsp.protocol.make_client_capabilities()
-        local lspconfig = require'lspconfig'
+        local lspconfig = require 'lspconfig'
         capabilities = require('cmp_nvim_lsp').update_capabilities(capabilities)
-        lspconfig.pyright.setup{capabilities=capabilities}
-        lspconfig.gopls.setup{capabilities=capabilities}
-        lspconfig.clangd.setup{
-            capabilities = capabilities,
-            autostart = false,
-        }
-        lspconfig.jsonls.setup{capabilities=capabilities}
-        lspconfig.sumneko_lua.setup{
+        lspconfig.pyright.setup {capabilities = capabilities}
+        lspconfig.gopls.setup {capabilities = capabilities}
+        lspconfig.clangd.setup {capabilities = capabilities, autostart = false}
+        lspconfig.jsonls.setup {capabilities = capabilities}
+        lspconfig.sumneko_lua.setup {
             capabilities = capabilities,
             settings = {
                 Lua = {
-                    runtime = { version = 'LuaJIT' },
-                    diagnostics = { globals = {'vim'} },
+                    runtime = {version = 'LuaJIT'},
+                    diagnostics = {globals = {'vim'}},
                     workspace = {
-                        library = vim.api.nvim_get_runtime_file("", true),
+                        library = vim.api.nvim_get_runtime_file("", true)
                     },
-                    telemetry = { enable = false, },
-                },
+                    telemetry = {enable = false}
+                }
             }
         }
     end
 }
 
-packer.use {
-    'mfussenegger/nvim-dap',
-    config = function()
-        vim.fn.sign_define('DapBreakpoint',          { text='', texthl='DapBreakpoint', linehl='',            numhl='DapBreakpoint'  })
-        vim.fn.sign_define('DapBreakpointCondition', { text='ﳁ', texthl='DapBreakpoint', linehl='',            numhl='DapBreakpoint'  })
-        vim.fn.sign_define('DapBreakpointRejected',  { text='', texthl='DapBreakpoint', linehl='',            numhl= 'DapBreakpoint' })
-        vim.fn.sign_define('DapLogPoint',            { text='', texthl='DapLogPoint',   linehl='DapLogPoint', numhl= 'DapLogPoint'   })
-        vim.fn.sign_define('DapStopped',             { text='', texthl='DapStopped',    linehl='DapStopped',  numhl= 'DapStopped'    })
-        local repl = require 'dap.repl'
-        local dap = require 'dap'
-        repl.commands = vim.tbl_extend(
-            'force', repl.commands, {
-                frames = {'.frames', '.f'},
-                scopes = {'.scopes', '.s'},
-                custom_commands = {
-                    -- conditional breakpoints
-                    ['.bb'] = dap.set_breakpoint,
-                    ['.terminate'] = dap.terminate,
-                    ['.restart'] = dap.restart,
-                }
-            }
-        )
-    end
-}
 packer.use {
     'mfussenegger/nvim-lint',
     config = function()
         local lint = require('lint')
-        lint.linters_by_ft = {
-          cpp = {'cppcheck'},
-          c = {'cppcheck'}
-        }
+        lint.linters_by_ft = {cpp = {'cppcheck'}, c = {'cppcheck'}}
         vim.cmd("command! Lint :lua require('lint').try_lint()<CR>")
     end
 }
-
--- LSP and debugger}}}
+-- }}}
 -- UI and theme {{{
 -- nix highlight
-packer.use {
-    'LnL7/vim-nix',
-    ft = {"nix"}
-}
+packer.use {'LnL7/vim-nix', ft = {"nix"}}
 
 packer.use {
     'folke/tokyonight.nvim',
-    config = function()
-        vim.g.tokyonight_style = "night"
-    end
+    config = function() vim.g.tokyonight_style = "night" end
 }
 packer.use {'sainnhe/everforest'}
 packer.use {
     'navarasu/onedark.nvim',
-    config = function()
-        vim.cmd[[
-        colorscheme everforest
-        highlight DapBreakpoint ctermbg=0 guifg=#993939 guibg=#31353f
-        highlight DapLogPoint   ctermbg=0 guifg=#61afef guibg=#31353f
-        highlight DapStopped    ctermbg=0 guifg=#98c379 guibg=#31353f
-        ]]
-
-    end
+    config = function() vim.cmd("colorscheme everforest") end
 }
 
 --- lualine
-packer.use {'hoob3rt/lualine.nvim',
+packer.use {
+    'hoob3rt/lualine.nvim',
     requires = {'kyazdani42/nvim-web-devicons', opt = true},
     config = function()
-        require('lualine').setup{
+        require('lualine').setup {
             options = {
-                component_separators = { left = '', right = '' },
-                section_separators = { left = '', right = '' },
+                component_separators = {left = '', right = ''},
+                section_separators = {left = '', right = ''}
             },
-            tabline = {
-                lualine_a = {"tabs"},
-                lualine_z = {"buffers"},
-            },
+            tabline = {lualine_a = {"tabs"}, lualine_z = {"buffers"}},
             extensions = {'fugitive', 'quickfix'}
         }
     end
@@ -260,56 +216,43 @@ packer.use 'tpope/vim-repeat' -- enable repeating supported plugin maps with .
 packer.use 'junegunn/vim-easy-align' -- <count>ai ii aI iI indent level
 packer.use 'michaeljsmith/vim-indent-object' -- quoting/parenthesizing
 packer.use 'jiangmiao/auto-pairs' -- colorize hex color code for quick theme configuration
-packer.use { "norcalli/nvim-colorizer.lua" ,
+packer.use {
+    "norcalli/nvim-colorizer.lua",
     config = function()
-        require"colorizer".setup{
-            "xdefaults";
-            "conf";
-            "dosini"
-        }
+        require"colorizer".setup {"xdefaults", "conf", "dosini"}
     end
 }
 
 packer.use {
     "darius4691/nvim-projectconfig",
-    config = function()
-        require("nvim-projectconfig").setup{}
-    end
+    config = function() require("nvim-projectconfig").setup {} end
 }
 
 -- tags auto generating
 packer.use {
     "ludovicchabant/vim-gutentags",
     config = function()
-        local set_var_list = function(var_pairs)
-            for k, v in pairs(var_pairs) do
-                vim.api.nvim_set_var(k, v)
-            end
-        end
         local tag_cache_dir = vim.fn.stdpath('cache') .. '/tags'
         if not vim.fn.isdirectory(tag_cache_dir) then
             vim.fn.mkdir(tag_cache_dir, 'p')
         end
-        set_var_list({
-            gutentags_project_root = {
-                '.root', '.svn', '.git', '.hg', '.project'
-            },
-            gutentags_ctags_tagfile = '.tags',
-            gutentags_cache_dir = tag_cache_dir,
-            gutentags_ctags_extra_args = {
-                '--fields=+niazS',
-                '--extras=+fq',
-                '--kinds-C=+px',
-                '--kinds-C++=+px',
-                '--output-format=e-ctags'
-            },
-            gutentags_modules = { 'ctags', 'cscope' },
-            gutentags_define_advanced_commands = 1;
-            gutentags_file_list_command = "find . -name " .. table.concat(
-            { '"*.c"', '"*.cpp"', '"*.h"', '"*.py"', '"*.lua"', '"*.go"'},
-            " -o -name "
-            );
-        })
+        Dolist({
+            {'project_root', {'.root', '.svn', '.git', '.hg', '.project'}},
+            {'ctags_tagfile', '.tags'}, {'cache_dir', tag_cache_dir}, {
+                'ctags_extra_args', {
+                    '--fields,+niazS', '--extras,+fq', '--kinds-C,+px',
+                    '--kinds-C++,+px', '--output-format,e-ctags'
+                }
+            }, {'modules', {'ctags', 'cscope'}},
+            {'define_advanced_commands', 1}, {
+                'file_list_command', 'find . -name ' ..
+                    table.concat(
+                        {
+                            '"*.c"', '"*.cpp"', '"*.h"', '"*.py"', '"*.lua"',
+                            '"*.go"'
+                        }, " -o -name ")
+            }
+        }, function(k, v) vim.api.nvim_set_var("gutentags_" .. k, v) end)
     end
 }
 
@@ -317,16 +260,17 @@ packer.use {
 packer.use {
     'nvim-treesitter/nvim-treesitter',
     requires = {
-        'p00f/nvim-ts-rainbow',
-        'nvim-treesitter/nvim-treesitter-refactor'
+        'p00f/nvim-ts-rainbow', 'nvim-treesitter/nvim-treesitter-refactor'
     },
     run = ':TSUpdate',
     config = function()
-        require'nvim-treesitter.configs'.setup{
-            ensure_installed = { "python", "go", "json", "bash", "lua", "c", "cpp" },
+        require'nvim-treesitter.configs'.setup {
+            ensure_installed = {
+                "python", "go", "json", "bash", "lua", "c", "cpp"
+            },
             highlight = {
                 enable = true,
-                additional_vim_regex_highlighting = false,
+                additional_vim_regex_highlighting = false
             },
             incremental_selection = {
                 enable = true,
@@ -334,82 +278,61 @@ packer.use {
                     init_selection = "gnn",
                     node_incremental = "}",
                     scope_incremental = "grc",
-                    node_decremental = "{",
-                },
+                    node_decremental = "{"
+                }
             },
             refactor = {
                 highlight_definitions = {enable = true},
-                highlight_current_scope = {enable = true},
+                highlight_current_scope = {enable = true}
             },
             rainbow = {
-              enable = true,
-              extended_mode = true, -- Also highlight non-bracket delimiters like html tags, boolean or table: lang -> boolean
-              max_file_lines = 10000, -- Do not enable for files with more than n lines, int
+                enable = true,
+                extended_mode = true, -- Also highlight non-bracket delimiters like html tags, boolean or table: lang -> boolean
+                max_file_lines = 10000 -- Do not enable for files with more than n lines, int
             }
         }
     end
 }
 
--- debug virtual text
-packer.use {
-    'theHamsta/nvim-dap-virtual-text',
-    config = function()
-        require("nvim-dap-virtual-text").setup()
-    end
-}
 --- hightlight
 packer.use {
     "folke/todo-comments.nvim",
     requires = "nvim-lua/plenary.nvim",
-    config = function()
-        require("todo-comments").setup()
-    end
+    config = function() require("todo-comments").setup() end
 }
 
-packer.use {'lewis6991/gitsigns.nvim', requires = {'nvim-lua/plenary.nvim'},
-    config = function()
-        require('gitsigns').setup()
-    end
+packer.use {
+    'lewis6991/gitsigns.nvim',
+    requires = {'nvim-lua/plenary.nvim'},
+    config = function() require('gitsigns').setup() end
 }
 -- telescope
 packer.use {
     "nvim-telescope/telescope.nvim",
     requires = {
-        "nvim-lua/popup.nvim",
-        "nvim-lua/plenary.nvim",
-        "nvim-telescope/telescope-dap.nvim",
-        "ahmedkhalf/project.nvim",
-        "nvim-telescope/telescope-file-browser.nvim"
+        "nvim-lua/popup.nvim", "nvim-lua/plenary.nvim",
+        "ahmedkhalf/project.nvim", "nvim-telescope/telescope-file-browser.nvim"
     },
     config = function()
-        require("project_nvim").setup {
-            manual_mode = true
-        }
+        require("project_nvim").setup {manual_mode = true}
         local ts = require("telescope")
         local actions = require "telescope.actions"
         ts.setup {
             pickers = {
-                quickfix = { theme = "dropdown" },
-                loclist = { theme = "dropdown" },
-                marks = { theme = "ivy" },
-                current_buffer_fuzzy_find = { theme = "ivy" },
-                find_files = { hidden = true },
-                commands = { theme = "ivy" },
-                buffers = {
-                    mappings = {
-                        i = {
-                            ["<c-d>"] = actions.delete_buffer,
-                        }
-                    }
-                }
+                quickfix = {theme = "dropdown"},
+                loclist = {theme = "dropdown"},
+                marks = {theme = "ivy"},
+                current_buffer_fuzzy_find = {theme = "ivy"},
+                find_files = {hidden = true},
+                commands = {theme = "ivy"},
+                buffers = {mappings = {i = {["<c-d>"] = actions.delete_buffer}}}
             }
         }
-        ts.load_extension('dap')
-        ts.load_extension('projects')
-        ts.load_extension('file_browser')
+        Dolist({'projects', 'file_browser'}, ts.load_extension)
     end
 }
 -- }}}
+
 -- Key Mappings {{{
 packer.use {
     "folke/which-key.nvim",
@@ -417,27 +340,8 @@ packer.use {
         local wk = require("which-key")
         local te = require('telescope')
         local ts = require("telescope.builtin")
-        -- local bl = require("bufferline")
-        local dap = require("dap")
         wk.register({
             b = {ts.buffers, "Buffers"},
-            d = {
-                name = 'DapList',
-                c = {te.extensions.dap.commands, "Commands"},
-                s = {te.extensions.dap.configuration, "Settings(cfg)"},
-                b = {te.extensions.dap.list_breakpoints, "BreakPoints"},
-                v = {te.extensions.dap.variables, "Variables"},
-                f = {te.extensions.dap.frames, "Frames(stack)"},
-                o = {dap.repl.open, "DapREPL"},
-                V = {function()
-                    local widgets = require('dap.ui.widgets')
-                    widgets.centered_float(widgets.scopes)
-                end, "ScopeWidget"},
-                F = {function()
-                    local widgets = require('dap.ui.widgets')
-                    widgets.centered_float(widgets.frames)
-                end, "FrameWidget"},
-            },
             g = {ts.grep_string, "GrepCword"},
             h = {ts.help_tags, "HelpTag"},
             l = {ts.loclist, "LocList"},
@@ -447,14 +351,12 @@ packer.use {
             p = {ts.diagnostics, "Diagnostics"},
             r = {ts.lsp_references, "ListReferences"},
             t = {ts.treesitter, "TreesitterObject"},
-            B = {dap.toggle_breakpoint, "DapBreak"},
-            C = {dap.continue, "DapContinue"},
             D = {ts.lsp_document_symbols, "DocumentSymbol"},
             F = {te.extensions.file_browser.file_browser, "FileBrowser"},
             M = {"<Cmd>TodoTelescope<Cr>", "TODOs"},
             P = {te.extensions.projects.projects, "Project"},
             S = {vim.lsp.buf.rename, "RenameVariable"},
-            T = {vim.lsp.buf.formatting, "Formatting"},
+            Q = {vim.lsp.buf.formatting, "Formatting"},
             ["."] = {ts.resume, "Resume"},
             [":"] = {ts.commands, "Commands"},
             ["]"] = {vim.diagnostic.goto_prev, "NextDiag"},
@@ -469,20 +371,104 @@ packer.use {
             ["6"] = {"6gt", "which_key_ignore"},
             ["7"] = {"7gt", "which_key_ignore"},
             ["8"] = {"8gt", "which_key_ignore"},
-            ["9"] = {"9gt", "which_key_ignore"},
-            }, {prefix="<space>"})
-        wk.register({g={
-            d={ts.lsp_definitions, "GoToDef"},
-            D={ts.lsp_type_definitions, "GoToTypeDef"},
-        }})
+            ["9"] = {"9gt", "which_key_ignore"}
+        }, {prefix = "<space>"})
+        wk.register({
+            g = {
+                d = {ts.lsp_definitions, "GoToDef"},
+                D = {ts.lsp_type_definitions, "GoToTypeDef"}
+            }
+        })
         -- which-key hijacked telescope C-r paste buffer command
         vim.api.nvim_exec([[
             augroup telescope
                 autocmd!
                 autocmd FileType TelescopePrompt inoremap <buffer> <silent> <C-r> <C-r>
             augroup END]], false)
-  end
+    end
 }
--- }}}
 --}}}
-
+-- Debugger {{{
+packer.use {
+    'mfussenegger/nvim-dap',
+    requires = {
+        "nvim-telescope/telescope-dap.nvim", 'theHamsta/nvim-dap-virtual-text'
+    },
+    config = function()
+        local ts = require("telescope")
+        local wk = require("which-key")
+        local dap = require("dap")
+        vim.cmd([[
+        highlight DapBreakpoint ctermbg=0 guifg=#993939 guibg=#31353f
+        highlight DapLogPoint   ctermbg=0 guifg=#61afef guibg=#31353f
+        highlight DapStopped    ctermbg=0 guifg=#98c379 guibg=#31353f
+        ]])
+        Dolist({
+            {
+                'DapBreakpoint',
+                {
+                    text = '',
+                    texthl = 'DapBreakpoint',
+                    linehl = '',
+                    numhl = 'DapBreakpoint'
+                }
+            }, {
+                'DapBreakpointCondition',
+                {
+                    text = 'ﳁ',
+                    texthl = 'DapBreakpoint',
+                    linehl = '',
+                    numhl = 'DapBreakpoint'
+                }
+            }, {
+                'DapBreakpointRejected',
+                {
+                    text = '',
+                    texthl = 'DapBreakpoint',
+                    linehl = '',
+                    numhl = 'DapBreakpoint'
+                }
+            }, {
+                'DapLogPoint', {
+                    text = '',
+                    texthl = 'DapLogPoint',
+                    linehl = 'DapLogPoint',
+                    numhl = 'DapLogPoint'
+                }
+            }, {
+                'DapStopped', {
+                    text = '',
+                    texthl = 'DapStopped',
+                    linehl = 'DapStopped',
+                    numhl = 'DapStopped'
+                }
+            }
+        }, vim.fn.sign_define)
+        require("nvim-dap-virtual-text").setup()
+        ts.load_extension("dap")
+        wk.register({
+            name = 'DapList',
+            b = {dap.toggle_breakpoint, "DapBreak"},
+            x = {dap.continue, "DapContinue"},
+            c = {ts.extensions.dap.commands, "Commands"},
+            s = {ts.extensions.dap.configuration, "Settings(cfg)"},
+            v = {ts.extensions.dap.variables, "Variables"},
+            f = {ts.extensions.dap.frames, "Frames(stack)"},
+            o = {dap.repl.open, "DapREPL"},
+            l = {ts.extensions.dap.list_breakpoints, "BreakPoints"},
+            a = {
+                function()
+                    local widgets = require('dap.ui.widgets')
+                    widgets.centered_float(widgets.scopes)
+                end, "ScopeWidget"
+            },
+            t = {
+                function()
+                    local widgets = require('dap.ui.widgets')
+                    widgets.centered_float(widgets.frames)
+                end, "FrameWidget"
+            }
+        }, {prefix = "<leader>"})
+    end
+}
+--}}}
