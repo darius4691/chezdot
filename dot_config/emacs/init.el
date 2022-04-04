@@ -28,7 +28,6 @@
 (set-fringe-mode 10)        ; Give some breathing room, modify the spacing 
 (menu-bar-mode -1)          ; Disable the menu bar
 (setq visible-bell t)       ; do not sound the bell. Instead, use visual blink
-(electric-pair-mode)        ; toggle auto-pair-mode
 
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
@@ -36,6 +35,7 @@
 (eval-when-compile (require 'use-package))
 (setq use-package-always-ensure t)
 
+(electric-pair-mode)        ; toggle auto-pair-mode
 (use-package undo-fu)
 (use-package evil
   :demand t
@@ -74,6 +74,9 @@
   :ensure t
   :init (doom-modeline-mode 1)
   :custom ((doom-modeline-height 15)))
+(use-package nyan-mode
+  :ensure t
+  :init (nyan-mode))
 
 ;; rainbow parrent
 (use-package rainbow-delimiters
@@ -251,7 +254,7 @@
 (use-package auctex-latexmk
   :config
   (auctex-latexmk-setup))
-(Use-package evil-tex
+(use-package evil-tex
   :hook (LaTeX-mode . evil-tex-mode))
 (add-hook 'LaTeX-mode-hook 'turn-on-auto-fill) ; 在latex模式下输入文字自动换行
 
@@ -303,6 +306,13 @@
   (evil-collection-define-key 'normal 'dired-mode-map
     "H" 'dired-hide-dotfiles-mode))
 
+(use-package elfeed
+  :config
+  (setq elfeed-feeds
+	'(("https://sspai.com/feed")
+	  ("https://rsshub.app/guokr/scientific")))
+  (setq browse-url-browser-function 'eww-browse-url))
+
 (use-package ggtags)
 (use-package call-graph
   :config
@@ -322,3 +332,4 @@
     "t" 'cg-toggle-show-func-args
     "f" 'cg-toggle-invalid-reference
     (kbd "<RET>") 'cg-goto-file-at-point))
+(use-package pdf-tools)

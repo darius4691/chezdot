@@ -83,6 +83,29 @@ vim.cmd("command! ReloadInit :luafile " .. vim.fn.stdpath("config") .. "/init.lu
 local packer = require('packer')
 packer.init()
 packer.use 'wbthomason/packer.nvim'
+-- Key Mappings Helper {{{
+packer.use {
+    "folke/which-key.nvim",
+    config = function()
+        local wk = require("which-key")
+        wk.register({
+            S = {vim.lsp.buf.rename, "RenameVariable"},
+            Q = {vim.lsp.buf.formatting, "Formatting"},
+            ["]"] = {vim.diagnostic.goto_prev, "NextDiag"},
+            ["["] = {vim.diagnostic.goto_next, "PrevDiag"},
+            ["1"] = {"1gt", "which_key_ignore"},
+            ["2"] = {"2gt", "which_key_ignore"},
+            ["3"] = {"3gt", "which_key_ignore"},
+            ["4"] = {"4gt", "which_key_ignore"},
+            ["5"] = {"5gt", "which_key_ignore"},
+            ["6"] = {"6gt", "which_key_ignore"},
+            ["7"] = {"7gt", "which_key_ignore"},
+            ["8"] = {"8gt", "which_key_ignore"},
+            ["9"] = {"9gt", "which_key_ignore"}
+        }, {prefix = "<space>"})
+    end
+}
+--}}}
 -- Completion {{{
 packer.use {'L3MON4D3/LuaSnip'}
 packer.use {
@@ -329,49 +352,29 @@ packer.use {
             }
         }
         Dolist({'projects', 'file_browser'}, ts.load_extension)
-    end
-}
--- }}}
-
--- Key Mappings {{{
-packer.use {
-    "folke/which-key.nvim",
-    config = function()
+        -- setting key binds
         local wk = require("which-key")
-        local te = require('telescope')
-        local ts = require("telescope.builtin")
+        local tb = require("telescope.builtin")
+        -- which-key hijacked telescope C-r paste buffer command
         wk.register({
-            b = {ts.buffers, "Buffers"},
-            g = {ts.grep_string, "GrepCword"},
-            h = {ts.help_tags, "HelpTag"},
-            l = {ts.loclist, "LocList"},
-            m = {ts.marks, "VimMarks"},
-            c = {ts.quickfix, "QuickFix"},
-            f = {ts.find_files, "OpenFile"},
-            p = {ts.diagnostics, "Diagnostics"},
-            r = {ts.lsp_references, "ListReferences"},
-            t = {ts.treesitter, "TreesitterObject"},
-            D = {ts.lsp_document_symbols, "DocumentSymbol"},
-            F = {te.extensions.file_browser.file_browser, "FileBrowser"},
+            b = {tb.buffers, "Buffers"},
+            g = {tb.grep_string, "GrepCword"},
+            h = {tb.help_tags, "HelpTag"},
+            l = {tb.loclist, "LocList"},
+            m = {tb.marks, "VimMarks"},
+            c = {tb.quickfix, "QuickFix"},
+            f = {tb.find_files, "OpenFile"},
+            p = {tb.diagnostics, "Diagnostics"},
+            r = {tb.lsp_references, "ListReferences"},
+            t = {tb.treesitter, "TreesitterObject"},
+            D = {tb.lsp_document_symbols, "DocumentSymbol"},
+            F = {ts.extensions.file_browser.file_browser, "FileBrowser"},
             M = {"<Cmd>TodoTelescope<Cr>", "TODOs"},
-            P = {te.extensions.projects.projects, "Project"},
-            S = {vim.lsp.buf.rename, "RenameVariable"},
-            Q = {vim.lsp.buf.formatting, "Formatting"},
-            ["."] = {ts.resume, "Resume"},
-            [":"] = {ts.commands, "Commands"},
-            ["]"] = {vim.diagnostic.goto_prev, "NextDiag"},
-            ["["] = {vim.diagnostic.goto_next, "PrevDiag"},
-            ["/"] = {ts.current_buffer_fuzzy_find, "FindCurrent"},
-            ["?"] = {ts.live_grep, "LiveGrep"},
-            ["1"] = {"1gt", "which_key_ignore"},
-            ["2"] = {"2gt", "which_key_ignore"},
-            ["3"] = {"3gt", "which_key_ignore"},
-            ["4"] = {"4gt", "which_key_ignore"},
-            ["5"] = {"5gt", "which_key_ignore"},
-            ["6"] = {"6gt", "which_key_ignore"},
-            ["7"] = {"7gt", "which_key_ignore"},
-            ["8"] = {"8gt", "which_key_ignore"},
-            ["9"] = {"9gt", "which_key_ignore"}
+            P = {ts.extensions.projects.projects, "Project"},
+            ["."] = {tb.resume, "Resume"},
+            [":"] = {tb.commands, "Commands"},
+            ["/"] = {tb.current_buffer_fuzzy_find, "FindCurrent"},
+            ["?"] = {tb.live_grep, "LiveGrep"}
         }, {prefix = "<space>"})
         wk.register({
             g = {
@@ -379,7 +382,6 @@ packer.use {
                 D = {ts.lsp_type_definitions, "GoToTypeDef"}
             }
         })
-        -- which-key hijacked telescope C-r paste buffer command
         vim.api.nvim_exec([[
             augroup telescope
                 autocmd!
@@ -387,7 +389,8 @@ packer.use {
             augroup END]], false)
     end
 }
---}}}
+-- }}}
+
 -- Debugger {{{
 packer.use {
     'mfussenegger/nvim-dap',

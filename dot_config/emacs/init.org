@@ -1,12 +1,13 @@
 #+title: 工作用文本编辑器的选择于配置
 #+author: 黄耀庭
+#+STARTUP: show2levels
 #+PROPERTY: header-args:emacs-lisp :tangle ~/.config/emacs/init.el :mkdirp yes
 
 * 起源
 * Emacs
 ** 开始
 *** EMACS CUSTOM
-在载入颜色主题和 package 时, emacs 会在 init.el 里自动创建配置代码, 这里提前载入这些
+在载入颜色主题和 package 时, emacs 会在 init.el 里自动创建配置代码, 这里提前载入这些  
 #+begin_src emacs-lisp
 (setq custom-file "~/.config/emacs/custom.el")
 (load custom-file)
@@ -31,6 +32,7 @@
     (darius/set-font))
 #+end_src
 *** 软件源设置
+由于中国大陆地区访问 melpa 比较慢, 因此使用国内镜像; 如果在公司网络, 无法正常访问外网, 也可以直接制作U盘镜像; 镜像大小约为 8G, 参见 [[https://elpamirror.emacs-china.org][Emacs中国镜像]] 
 #+begin_src emacs-lisp
 (require 'package) ; This should be autoloaded. I'm putting this line here just in case not.
 (setq package-archives '(("melpa" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/")
@@ -41,6 +43,18 @@
  (package-refresh-contents))
 #+end_src
 *** 初始界面设置
+初始界面为了照顾新人引入了很多不必要的界面元素, 这些界面元素包括
+| 界面元素 | 相关参数                  | 说明                                             |
+|----------+---------------------------+--------------------------------------------------|
+| 欢迎界面 | =inhibit-startup-message= | 初始进入的问候界面; 如果关闭则会默认进入 scratch |
+| 滚动条   | =scroll-bar-mode=         | 真的有程序员会看这个么?                          |
+| 工具栏   | =tool-bar-mode=           | 提供的功能很少, 而且大部分时间遮挡视野           |
+| 工具提示 | =tooltip-mode=            | 把鼠标放在工具栏上, 一段时间后出现的提示         |
+| 页面边距 | =set-fringe-mode=         | 代码和左边框的最小距离, 建议适当增大             |
+| 菜单栏   | =menu-bar-mode=           | 前期可以保留; 后期用熟快捷键可以去除             |
+| 警告声   | =visible-bell=            | 可以使用视觉警告方式                             |
+
+为了使可编程区域更大, 建议做出如下调整:
 #+begin_src emacs-lisp
 (setq inhibit-startup-message t)
 (scroll-bar-mode -1)        ; Disable visible scrollbar
@@ -49,7 +63,6 @@
 (set-fringe-mode 10)        ; Give some breathing room, modify the spacing 
 (menu-bar-mode -1)          ; Disable the menu bar
 (setq visible-bell t)       ; do not sound the bell. Instead, use visual blink
-(electric-pair-mode)        ; toggle auto-pair-mode
 #+end_src
 ** 使用软件包
 *** =use-package=
@@ -66,6 +79,7 @@ Bootstrip use-package
 *** EVIL mode
 vim style undo not needed for emacs 28
 #+begin_src emacs-lisp
+(electric-pair-mode)        ; toggle auto-pair-mode
 (use-package undo-fu)
 (use-package evil
   :demand t
@@ -327,7 +341,7 @@ modeline
 (use-package auctex-latexmk
   :config
   (auctex-latexmk-setup))
-(Use-package evil-tex
+(use-package evil-tex
   :hook (LaTeX-mode . evil-tex-mode))
 (add-hook 'LaTeX-mode-hook 'turn-on-auto-fill) ; 在latex模式下输入文字自动换行
 #+end_src
@@ -386,6 +400,15 @@ modeline
     "H" 'dired-hide-dotfiles-mode))
 #+end_src
 
+*** TODO Feed
+#+begin_src emacs-lisp
+(use-package elfeed
+  :config
+  (setq elfeed-feeds
+	'(("https://sspai.com/feed")
+	  ("https://rsshub.app/guokr/scientific")))
+  (setq browse-url-browser-function 'eww-browse-url))
+#+end_src
 ** 软件试验场
 #+begin_src emacs-lisp
 (use-package ggtags)
@@ -407,6 +430,7 @@ modeline
     "t" 'cg-toggle-show-func-args
     "f" 'cg-toggle-invalid-reference
     (kbd "<RET>") 'cg-goto-file-at-point))
+(use-package pdf-tools)
 #+end_src
 
 * LATEX
@@ -537,3 +561,4 @@ Latex 模板需要包含如字段, 一般
 }
 \lstset{style=ayu}
 #+end_src
+
