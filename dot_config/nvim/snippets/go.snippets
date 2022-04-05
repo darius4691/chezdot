@@ -1,0 +1,7 @@
+snippet cgo
+	/*
+	#cgo CFLAGS: -Iinclude
+	#cgo LDFLAGS: -Llib -Wl,-rpath=\$ORIGIN/lib -l $1
+	#include "$2"
+	*/
+	import "C"
