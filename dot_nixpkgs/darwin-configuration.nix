@@ -24,7 +24,7 @@
     # DEVEL TOOLS
     universal-ctags global cscope
     gnumake cmake gcc libgccjit llvm
-    sbcl racket-minimal
+    sbcl racket-minimal nodejs
     # LITERAL TOOLS
     graphviz pandoc gnuplot
     texlive.combined.scheme-full

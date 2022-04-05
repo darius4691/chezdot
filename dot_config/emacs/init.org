@@ -1,6 +1,6 @@
 #+title: 工作用文本编辑器的选择于配置
 #+author: 黄耀庭
-#+STARTUP: show2levels
+#+STARTUP: overview
 #+PROPERTY: header-args:emacs-lisp :tangle ~/.config/emacs/init.el :mkdirp yes
 
 * 起源
@@ -30,6 +30,18 @@
 (if (daemonp)
     (add-hook 'server-after-make-frame-hook #'darius/set-font)
     (darius/set-font))
+#+end_src
+*** 代理设置
+#+begin_src emacs-lisp
+(defun darius/toggle-proxy ()
+  (interactive)
+  (if (getenv "http_proxy")
+      (progn (setenv "http_proxy" nil)
+	     (setenv "https_proxy" nil)
+	     (message "Proxy Unsetted"))
+      (progn (setenv "http_proxy" "http://127.0.0.1:1087")
+	     (setenv "https_proxy" "http://127.0.0.1:1087")
+	     (message "Proxy Setted"))))
 #+end_src
 *** 软件源设置
 由于中国大陆地区访问 melpa 比较慢, 因此使用国内镜像; 如果在公司网络, 无法正常访问外网, 也可以直接制作U盘镜像; 镜像大小约为 8G, 参见 [[https://elpamirror.emacs-china.org][Emacs中国镜像]] 
@@ -209,6 +221,32 @@ modeline
   :init (ivy-rich-mode 1))
 #+end_src
 
+#+begin_src emacs-lisp
+(use-package corfu
+  ;; Optional customizations
+  :custom
+  ;; (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
+  (corfu-auto t)                 ;; Enable auto completion
+  ;; (corfu-separator ?\s)          ;; Orderless field separator
+  ;; (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
+  ;; (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
+  ;; (corfu-preview-current nil)    ;; Disable current candidate preview
+  ;; (corfu-preselect-first nil)    ;; Disable candidate preselection
+  ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
+  ;; (corfu-echo-documentation nil) ;; Disable documentation in the echo area
+  ;; (corfu-scroll-margin 5)        ;; Use scroll margin
+
+  ;; You may want to enable Corfu only for certain modes.
+  ;; :hook ((prog-mode . corfu-mode)
+  ;;        (shell-mode . corfu-mode)
+  ;;        (eshell-mode . corfu-mode))
+
+  ;; Recommended: Enable Corfu globally.
+  ;; This is recommended since dabbrev can be used globally (M-/).
+  :init
+  (corfu-global-mode))
+#+end_src
+
 ** ORG-MODE
 *** 全局设置
 #+begin_src emacs-lisp
@@ -353,11 +391,12 @@ modeline
 (use-package posframe)
 
 (use-package pyim
+  :custom
+  (pyim-page-tooltip 'posframe)
+  (pyim-punctuation-translate-p '(no auto yes)) ;全角半角问题
+  (pyim-punctuation-dict nil) ;全角半角问题
+  (default-input-method "pyim")
   :config
-  (setq pyim-page-tooltip 'posframe)
-  (setq pyim-punctuation-translate-p '(no auto yes)) ;全角半角问题
-  (setq pyim-punctuation-dict nil) ;全角半角问题
-  (setq default-input-method "pyim")
   (pyim-default-scheme 'xiaohe-shuangpin)
   (pyim-extra-dicts-add-dict
     `(:name "Greatdict"
@@ -400,14 +439,40 @@ modeline
     "H" 'dired-hide-dotfiles-mode))
 #+end_src
 
-*** TODO Feed
+*** Feed
 #+begin_src emacs-lisp
 (use-package elfeed
   :config
   (setq elfeed-feeds
 	'(("https://sspai.com/feed")
-	  ("https://rsshub.app/guokr/scientific")))
+	  ("https://rsshub.app/guokr/scientific")
+	  ("http://feeds.feedburner.com/tinybuddha")))
   (setq browse-url-browser-function 'eww-browse-url))
+#+end_src
+*** Snippet
+#+begin_src emacs-lisp
+(use-package yasnippet-snippets)
+(use-package yasnippet
+  :bind (:map evil-normal-state-map
+	 ("<leader>s" . 'yas-insert-snippet))
+  :config
+  (yas-global-mode 1))
+#+end_src
+*** 网易云音乐
+#+begin_src emacs-lisp
+(use-package netease-cloud-music
+  :bind (:map evil-normal-state-map
+	      ("<leader>mm" .  'netease-cloud-music-pause-or-continue)
+	      ("<leader>mn" .  'netease-cloud-music-play-next-song)
+	      ("<leader>mp" .  'netease-cloud-music-play-previous-song)
+	      ("<leader>mf" .  'netease-cloud-music-search-song))
+  :config
+  (evil-define-key 'normal netease-cloud-music-mode-map
+	   "<RET>"  'netease-cloud-music-play-song-at-point
+	   "n"  'netease-cloud-music-play-next-song
+	   "p"  'netease-cloud-music-play-previous-song
+	   "f"  'netease-cloud-music-search-song)
+  :hook (netease-cloud-music . evil-local-mode))
 #+end_src
 ** 软件试验场
 #+begin_src emacs-lisp
@@ -432,7 +497,6 @@ modeline
     (kbd "<RET>") 'cg-goto-file-at-point))
 (use-package pdf-tools)
 #+end_src
-
 * LATEX
 ** 如何制作一个 =cls= 模板
 自己新建的Latex模板需要放在特定文件夹下, 从而可以被 =\documentclass= 找到:

@@ -17,39 +17,38 @@ function Dolist(list, func)
     end
 end
 -- }}}
-
 -- Defaults {{{
-vim.opt.number = true                               -- show line numbers
+vim.opt.number = true                         -- show line numbers
 vim.opt.ruler = true
-vim.opt.ttyfast = true                              -- terminal acceleration
+vim.opt.ttyfast = true                        -- terminal acceleration
 vim.opt.tabstop = 4
 vim.opt.shiftwidth = 4
-vim.opt.smarttab = true                             -- set tabs for a shifttabs logic
+vim.opt.smarttab = true                       -- set tabs for a shifttabs logic
 vim.opt.expandtab = true
-vim.opt.autoindent = true                           -- indent when moving to the next line while writing code
-vim.opt.cursorline = true                           -- shows line under the cursor's line
-vim.opt.showmatch = true                            -- shows matching part of bracket pairs (), [], {}
-vim.opt.enc = 'utf-8'                               -- utf-8 by default
-vim.opt.backspace = 'indent,eol,start'              -- backspace removes all (indents, EOLs, start) What is start?
-vim.opt.scrolloff = 10                              -- let 10 lines before/after cursor during scroll
-vim.opt.clipboard = 'unnamedplus'                   -- use system clipboard
-vim.opt.hidden = true                               -- textEdit might fail if hidden is not set.
-vim.opt.backup = false                              -- some servers have issues with backup files, see #649.
+vim.opt.autoindent = true                     -- indent when moving to the next line while writing code
+vim.opt.cursorline = true                     -- shows line under the cursor's line
+vim.opt.showmatch = true                      -- shows matching part of bracket pairs (), [], {}
+vim.opt.enc = 'utf-8'                         -- utf-8 by default
+vim.opt.backspace = 'indent,eol,start'        -- backspace removes all (indents, EOLs, start) What is start?
+vim.opt.scrolloff = 10                        -- let 10 lines before/after cursor during scroll
+vim.opt.clipboard = 'unnamedplus'             -- use system clipboard
+vim.opt.hidden = true                         -- textEdit might fail if hidden is not set.
+vim.opt.backup = false                        -- some servers have issues with backup files, see #649.
 vim.opt.writebackup = false
-vim.opt.cmdheight = 2                               -- give more space for displaying messages.
-vim.opt.updatetime = 300                            -- reduce updatetime (default is 4000 ms = 4 s) leads to noticeable
-vim.opt.iskeyword:append{'-'}                       -- treat dash separated words as a word text object"
-vim.opt.signcolumn = 'yes'                          -- Always show the signcolumn, otherwise it would shift the text each time diagnostics appear/become resolved.
-vim.opt.showmode = false                            -- compatible with lightline
-vim.opt.showtabline = 2                             -- show tab line always
-vim.opt.list = true                                 -- show invisible characters
-vim.opt.listchars = 'tab:>-,trail:~'                -- list symbols, extends,precedes are useless if warp is on
-vim.opt.foldnestmax = 1                             -- only fold top level
-vim.opt.foldmethod = 'syntax'                       -- fold by syntax
+vim.opt.cmdheight = 2                         -- give more space for displaying messages.
+vim.opt.updatetime = 300                      -- reduce updatetime (default is 4000 ms = 4 s) leads to noticeable
+vim.opt.iskeyword:append{'-'}                 -- treat dash separated words as a word text object"
+vim.opt.signcolumn = 'yes'                    -- Always show the signcolumn, otherwise it would shift the text each time diagnostics appear/become resolved.
+vim.opt.showmode = false                      -- compatible with lightline
+vim.opt.showtabline = 2                       -- show tab line always
+vim.opt.list = true                           -- show invisible characters
+vim.opt.listchars = 'tab:>-,trail:~'          -- list symbols, extends,precedes are useless if warp is on
+vim.opt.foldnestmax = 1                       -- only fold top level
+vim.opt.foldmethod = 'syntax'                 -- fold by syntax
 
-vim.opt.termguicolors = true                        -- enable true color
-vim.opt.completeopt = 'menu,menuone,noselect'       -- completion menu options
-vim.opt.pumheight = 7                               -- limit the completion menu height
+vim.opt.termguicolors = true                  -- enable true color
+vim.opt.completeopt = 'menu,menuone,noselect' -- completion menu options
+vim.opt.pumheight = 7                         -- limit the completion menu height
 vim.opt.grepprg = "rg --vimgrep --no-heading --smart-case" -- use ripgrep for completion
 vim.opt.helplang = "cn,en"
 
@@ -60,29 +59,31 @@ vim.api.nvim_set_var('loaded_python_provider', 0)   -- disable python2 support
 vim.cmd('syntax enable')                            -- syntax highlight
 vim.cmd('autocmd TermOpen * setlocal nonumber norelativenumber' )  -- disable line number in terminal mode
 
+local keymap_opts = {noremap=true, silent=true}
 Dolist({
-    {'t', '<Esc>', '<C-\\><C-n>', {noremap = true}},
-    {'n', ']l', '<CMD>lnext<CR>', {noremap = true}},
-    {'n', '[l', '<CMD>lprev<CR>', {noremap = true}},
-    {'n', ']f', '<CMD>cnext<CR>', {noremap = true}},
-    {'n', '[f', '<CMD>cprev<CR>', {noremap = true}},
-    {'n', '<C-_>s', '<CMD>cs f s <cword><CR>', {noremap = true}},
-    {'n', '<C-_>g', '<CMD>cs f g <cword><CR>', {noremap = true}},
-    {'n', '<C-_>c', '<CMD>cs f c <cword><CR>', {noremap = true}},
-    {'n', '<C-_>t', '<CMD>cs f t <cword><CR>', {noremap = true}},
-    {'n', '<C-_>e', '<CMD>cs f e <cword><CR>', {noremap = true}},
-    {'n', '<C-_>f', '<CMD>cs f f <cfile><CR>', {noremap = true}},
-    {'n', '<C-_>i', '<CMD>cs f i <cfile><CR>', {noremap = true}},
-    {'n', '<C-_>d', '<CMD>cs f d <cword><CR>', {noremap = true}},
-    {'n', '<C-_>a', '<CMD>cs f a <cword><CR>', {noremap = true}}
+    {'t', '<Esc>', '<C-\\><C-n>', keymap_opts},
+    {'n', ']l', '<CMD>lnext<CR>', keymap_opts},
+    {'n', '[l', '<CMD>lprev<CR>', keymap_opts},
+    {'n', ']f', '<CMD>cnext<CR>', keymap_opts},
+    {'n', '[f', '<CMD>cprev<CR>', keymap_opts},
+    {'n', '<C-_>s', '<CMD>cs f s <cword><CR>', keymap_opts},
+    {'n', '<C-_>g', '<CMD>cs f g <cword><CR>', keymap_opts},
+    {'n', '<C-_>c', '<CMD>cs f c <cword><CR>', keymap_opts},
+    {'n', '<C-_>t', '<CMD>cs f t <cword><CR>', keymap_opts},
+    {'n', '<C-_>e', '<CMD>cs f e <cword><CR>', keymap_opts},
+    {'n', '<C-_>f', '<CMD>cs f f <cfile><CR>', keymap_opts},
+    {'n', '<C-_>i', '<CMD>cs f i <cfile><CR>', keymap_opts},
+    {'n', '<C-_>d', '<CMD>cs f d <cword><CR>', keymap_opts},
+    {'n', '<C-_>a', '<CMD>cs f a <cword><CR>', keymap_opts}
 }, vim.api.nvim_set_keymap)
 
 -- vim.diagnostic.setloclist()
 --: }}}
-vim.cmd("command! ReloadInit :luafile " .. vim.fn.stdpath("config") .. "/init.lua")
+-- Packer {{{
 local packer = require('packer')
 packer.init()
 packer.use 'wbthomason/packer.nvim'
+-- }}}
 -- Key Mappings Helper {{{
 packer.use {
     "folke/which-key.nvim",
@@ -107,7 +108,12 @@ packer.use {
 }
 --}}}
 -- Completion {{{
-packer.use {'L3MON4D3/LuaSnip'}
+packer.use {
+    'L3MON4D3/LuaSnip',
+    config = function()
+        require("luasnip.loaders.from_snipmate").lazy_load()
+    end
+}
 packer.use {
     'hrsh7th/nvim-cmp',
     requires = {
@@ -171,12 +177,59 @@ packer.use {
     config = function()
         local capabilities = vim.lsp.protocol.make_client_capabilities()
         local lspconfig = require 'lspconfig'
+        local opts = {noremap = true, silent = true}
+        local on_attach = function(_, bufnr)
+            vim.api.nvim_buf_set_option(bufnr, 'omnifunc',
+                                        'v:lua.vim.lsp.omnifunc')
+            Dolist({
+                {bufnr, 'n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', opts},
+                {
+                    bufnr, 'n', 'gi',
+                    '<cmd>lua vim.lsp.buf.implementation()<CR>', opts
+                },
+                {
+                    bufnr, 'n', '<C-k>',
+                    '<cmd>lua vim.lsp.buf.signature_help()<CR>', opts
+                }, {
+                    bufnr, 'n', '<space>wa',
+                    '<cmd>lua vim.lsp.buf.add_workspace_folder()<CR>', opts
+                }, {
+                    bufnr, 'n', '<space>wr',
+                    '<cmd>lua vim.lsp.buf.remove_workspace_folder()<CR>', opts
+                }, {
+                    bufnr, 'n', '<space>wl',
+                    '<cmd>lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))<CR>',
+                    opts
+                },
+                {
+                    bufnr, 'n', '<space>A',
+                    '<cmd>lua vim.lsp.buf.code_action()<CR>', opts
+                },
+                {
+                    bufnr, 'n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>',
+                    opts
+                }
+            }, vim.api.nvim_buf_set_keymap)
+        end
         capabilities = require('cmp_nvim_lsp').update_capabilities(capabilities)
-        lspconfig.pyright.setup {capabilities = capabilities}
-        lspconfig.gopls.setup {capabilities = capabilities}
-        lspconfig.clangd.setup {capabilities = capabilities, autostart = false}
-        lspconfig.jsonls.setup {capabilities = capabilities}
+        lspconfig.pyright.setup {
+            capabilities = capabilities,
+            on_attach = on_attach
+        }
+        lspconfig.gopls.setup {
+            capabilities = capabilities,
+            on_attach = on_attach
+        }
+        lspconfig.clangd.setup {
+            capabilities = capabilities,
+            on_attach = on_attach
+        }
+        lspconfig.jsonls.setup {
+            capabilities = capabilities,
+            on_attach = on_attach
+        }
         lspconfig.sumneko_lua.setup {
+            on_attach = on_attach,
             capabilities = capabilities,
             settings = {
                 Lua = {
@@ -348,7 +401,9 @@ packer.use {
                 current_buffer_fuzzy_find = {theme = "ivy"},
                 find_files = {hidden = true},
                 commands = {theme = "ivy"},
-                buffers = {mappings = {i = {["<c-d>"] = actions.delete_buffer}}}
+                buffers = {
+                    mappings = {i = {["<c-d>"] = actions.delete_buffer}}
+                }
             }
         }
         Dolist({'projects', 'file_browser'}, ts.load_extension)
@@ -358,12 +413,12 @@ packer.use {
         -- which-key hijacked telescope C-r paste buffer command
         wk.register({
             b = {tb.buffers, "Buffers"},
+            c = {tb.quickfix, "QuickFix"},
+            f = {tb.find_files, "OpenFile"},
             g = {tb.grep_string, "GrepCword"},
             h = {tb.help_tags, "HelpTag"},
             l = {tb.loclist, "LocList"},
             m = {tb.marks, "VimMarks"},
-            c = {tb.quickfix, "QuickFix"},
-            f = {tb.find_files, "OpenFile"},
             p = {tb.diagnostics, "Diagnostics"},
             r = {tb.lsp_references, "ListReferences"},
             t = {tb.treesitter, "TreesitterObject"},
@@ -390,7 +445,6 @@ packer.use {
     end
 }
 -- }}}
-
 -- Debugger {{{
 packer.use {
     'mfussenegger/nvim-dap',
@@ -410,7 +464,7 @@ packer.use {
             {
                 'DapBreakpoint',
                 {
-                    text = '',
+                    text = '',
                     texthl = 'DapBreakpoint',
                     linehl = '',
                     numhl = 'DapBreakpoint'
@@ -418,7 +472,7 @@ packer.use {
             }, {
                 'DapBreakpointCondition',
                 {
-                    text = 'ﳁ',
+                    text = '',
                     texthl = 'DapBreakpoint',
                     linehl = '',
                     numhl = 'DapBreakpoint'
