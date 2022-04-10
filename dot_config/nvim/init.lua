@@ -316,12 +316,12 @@ packer.use {
             {'project_root', {'.root', '.svn', '.git', '.hg', '.project'}},
             {'ctags_tagfile', '.tags'}, {'cache_dir', tag_cache_dir}, {
                 'ctags_extra_args', {
-                    '--fields,+niazS', '--extras,+fq', '--kinds-C,+px',
-                    '--kinds-C++,+px', '--output-format,e-ctags'
+                    '--fields=+niazS', '--extras=+fq', '--kinds-C=+px',
+                    '--kinds-C++=+px', '--output-format=e-ctags'
                 }
             }, {'modules', {'ctags', 'cscope'}},
             {'define_advanced_commands', 1}, {
-                'file_list_command', 'find . -name ' ..
+                'file_list_command', "find . -name " ..
                     table.concat(
                         {
                             '"*.c"', '"*.cpp"', '"*.h"', '"*.py"', '"*.lua"',
