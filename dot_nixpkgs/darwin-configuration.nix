@@ -22,9 +22,10 @@
     gnupg ncdu procs
     socat htop coreutils
     # DEVEL TOOLS
-    universal-ctags global cscope
-    gnumake cmake gcc libgccjit llvm
-    sbcl racket-minimal nodejs
+    universal-ctags global cscope # tagging tools
+    gnumake cmake gcc libgccjit   # compiling tools
+    sbcl racket-minimal nodejs    # some languages
+    ghc cabal-install haskell-language-server # haskell
     # LITERAL TOOLS
     graphviz pandoc gnuplot
     texlive.combined.scheme-full
@@ -90,6 +91,7 @@
     binaryCaches = [
       "https://mirrors.tuna.tsinghua.edu.cn/nix-channels/store"
       "https://mirrors.ustc.edu.cn/nix-channels/store"
+      "https://cache.nixos.org/"
     ];
     extraOptions = ''
       experimental-features = nix-command
