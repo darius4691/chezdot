@@ -402,7 +402,7 @@ packer.use {
                 find_files = {hidden = true},
                 commands = {theme = "ivy"},
                 buffers = {
-                    mappings = {i = {["<c-d>"] = actions.delete_buffer}}
+                    mappings = {i = {["<c-k>"] = actions.delete_buffer}}
                 }
             }
         }

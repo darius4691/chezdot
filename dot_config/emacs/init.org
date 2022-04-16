@@ -182,15 +182,11 @@ modeline
   :bind (:map ivy-minibuffer-map
          ("TAB" . ivy-alt-done)	
          ("C-l" . ivy-alt-done)
-         ("C-j" . ivy-next-line)
-         ("C-k" . ivy-previous-line)
          :map ivy-switch-buffer-map
-         ("C-k" . ivy-previous-line)
-         ("C-l" . ivy-done)
-         ("C-d" . ivy-switch-buffer-kill)
+         ("TAB" . ivy-alt-done)	
+         ("C-k" . ivy-switch-buffer-kill)
          :map ivy-reverse-i-search-map
-         ("C-k" . ivy-previous-line)
-         ("C-d" . ivy-reverse-i-search-kill))
+         ("C-k" . ivy-reverse-i-search-kill))
   :config
   (ivy-mode 1)
   (setq ivy-use-virtual-buffeers t)
@@ -207,7 +203,9 @@ modeline
 	 ("C-h o" . counsel-describe-symbol)
 	 ("C-; ?". counsel-rg)
          :map minibuffer-local-map
-         ("C-r" . 'counsel-minibuffer-history)))
+         ("C-r" . 'counsel-minibuffer-history)
+	 :map counsel-find-file-map
+	 ("C-d" . 'ivy-immediate-done)))
 
 (use-package all-the-icons-ivy-rich
   :ensure t
@@ -219,32 +217,26 @@ modeline
   :init (ivy-rich-mode 1))
 #+end_src
 
+** Completion at the point
 #+begin_src emacs-lisp
-(use-package corfu
-  ;; Optional customizations
+
+(use-package company
+  :ensure t
+  :after lsp-mode
+  :hook (lsp-mode . company-mode)
+  :bind (:map company-active-map
+         ("<tab>" . company-complete-selection))
+        (:map lsp-mode-map
+         ("<tab>" . company-indent-or-complete-common))
   :custom
-  ;; (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
-  (corfu-auto t)                 ;; Enable auto completion
-  ;; (corfu-separator ?\s)          ;; Orderless field separator
-  ;; (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
-  ;; (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
-  ;; (corfu-preview-current nil)    ;; Disable current candidate preview
-  ;; (corfu-preselect-first nil)    ;; Disable candidate preselection
-  ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
-  ;; (corfu-echo-documentation nil) ;; Disable documentation in the echo area
-  ;; (corfu-scroll-margin 5)        ;; Use scroll margin
+  (company-minimum-prefix-length 1)
+  (company-idle-delay 0.0))
 
-  ;; You may want to enable Corfu only for certain modes.
-  ;; :hook ((prog-mode . corfu-mode)
-  ;;        (shell-mode . corfu-mode)
-  ;;        (eshell-mode . corfu-mode))
+(use-package company-box
+  :ensure t
+  :hook (company-mode . company-box-mode))
 
-  ;; Recommended: Enable Corfu globally.
-  ;; This is recommended since dabbrev can be used globally (M-/).
-  :init
-  (corfu-global-mode))
 #+end_src
-
 ** ORG-MODE
 *** 快捷键设置
 #+begin_src emacs-lisp
@@ -293,6 +285,7 @@ modeline
 (use-package lua-mode)
 (use-package racket-mode)
 (use-package haskell-mode)
+(use-package graphviz-dot-mode :ensure t)
 #+end_src
 
 ***  EXPORTER
@@ -349,7 +342,7 @@ modeline
          ("C-; g" . org-roam-graph)
          ("C-; i" . org-roam-node-insert)
          ("C-; c" . org-roam-capture)
-         ;; Dailies
+         ;; dailies
          ("C-; j" . org-roam-dailies-capture-today))
   :config
   ;; If you're using a vertical completion framework, you might want a more informative completion interface
@@ -448,10 +441,46 @@ modeline
 	 ("C-; C-; C-e" . elfeed-update))
   :config
   (setq elfeed-feeds
-	'(("https://sspai.com/feed")
+	'(("https://sspai.com/feed" paywall)
+	  ("https://medium.com/feed/towards-data-science" paywall)
+	  ("https://rss.lilydjwg.me/zhihuzhuanlan/operations-research") 
 	  ("https://rsshub.app/guokr/scientific")
+	  ("https://planet.emacslife.com/atom.xml")
 	  ("http://feeds.feedburner.com/tinybuddha")))
   (setq browse-url-browser-function 'eww-browse-url))
+#+end_src
+**** bypass paywall
+如果需要激活, 加上给feed加上paywall标签
+#+begin_src emacs-lisp
+(add-to-list 'load-path (concat user-emacs-directory "site-packages/elfeed-paywall"))
+(use-package elfeed-paywall
+  :ensure nil
+  :config
+  (require 'elfeed-paywall))
+(defun darius/elfeed-transform-entry (entry)
+    "Transformation logic for ENTRYs."
+    (elfeed-paywall-with-tag
+    entry 'paywall
+    (lambda ()
+        (elfeed-log 'info "Processing Entry %s" (entry-deref (elfeed-entry-title entry)))
+        ;; Remove the analytics URL forwarder that is put in front of
+        ;; "The Register" articles
+	(elfeed-paywall-replace-regexp-in-link
+	   entry "go.theregister.com/feed/" "")
+
+	;; Prefix the link for use with https://12ft.io (A direct
+        ;; URL, no JS required)
+        (elfeed-paywall-add-paywall-proxy entry))
+
+        ;; Visit the entry link, bypass the paywall, and extract the
+        ;; content from the page, then replace the content in the
+        ;; entry with it
+        (elfeed-paywall-extract-from-url entry)
+
+    ;; Delete the tag after running the lambda
+    t))
+
+(add-hook 'elfeed-new-entry-hook #'darius/elfeed-transform-entry)
 #+end_src
 *** Snippet
 #+begin_src emacs-lisp
@@ -505,7 +534,13 @@ modeline
 | C-; j | org-roam-dailies-capture-tody |
 | C-; p | org-download-clipboard        |
 
-
+** 开发
+*** devdocs
+#+begin_src emacs-lisp
+(use-package devdocs
+  :ensure t
+  :bind ("C-; K" . 'devdocs-lookup))
+#+end_src
 ** 语言服务器支持
 *** LSP
 AKA =language server protocal=
@@ -537,7 +572,12 @@ see examples of what it can do.
 
 #+end_src
 *** LSP-IVY
-[[https://github.com/emacs-lsp/lsp-ivy][lsp-ivy]] integrates Ivy with =lsp-mode= to make it easy to search for things by name in your code.  When you run these commands, a prompt will appear in the minibuffer allowing you to type part of the name of a symbol in your code.  Results will be populated in the minibuffer so that you can find what you're looking for and jump to that location in the code upon selecting the result.
+[[https://github.com/emacs-lsp/lsp-ivy][lsp-ivy]] integrates Ivy with =lsp-mode= to make it easy to search for
+things by name in your code.  When you run these commands, a prompt
+will appear in the minibuffer allowing you to type part of the name of
+a symbol in your code.  Results will be populated in the minibuffer so
+that you can find what you're looking for and jump to that location in
+the code upon selecting the result.
 
 Try these commands with =M-x=:
 
@@ -555,17 +595,27 @@ Try these commands with =M-x=:
 #+begin_src emacs-lisp
 (use-package lsp-ltex
   :ensure t
-
-(setq lsp-ltex-version "15.2.0")
+  :config
+  (setq lsp-ltex-version "15.2.0")
   :hook (text-mode . (lambda ()
 		       (require 'lsp-ltex)
 		       (lsp-deferred))))  ; or lsp-deferred
 #+end_src
+* Research Tool
+** Scihub
+#+begin_src emacs-lisp
+(use-package scihub
+  :ensure t
+  :init
+  (setq scihub-download-directory "~/papers/"
+	scihub-open-after-download t
+	scihub-fetch-domain 'scihub-fetch-domains-lovescihub))
+#+end_src
+
 * LATEX
 ** 如何制作一个 =cls= 模板
 自己新建的Latex模板需要放在特定文件夹下, 从而可以被 =\documentclass= 找到:
 - unix: =~/texmf/tex/latex/[任意]/[自定义模板名].cls=
-
 *** 指定文件路经
 You could create a folder below your TeX home directory and put your .sty file therein. Use this command at the command prompt to find out where:
 #+begin_src shell

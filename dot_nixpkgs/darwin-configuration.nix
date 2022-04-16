@@ -23,7 +23,7 @@
     socat htop coreutils
     # DEVEL TOOLS
     universal-ctags global cscope # tagging tools
-    gnumake cmake gcc libgccjit   # compiling tools
+    gnumake cmake gcc gdb libgccjit   # compiling tools
     sbcl racket-minimal nodejs    # some languages
     ghc cabal-install haskell-language-server # haskell
     # LITERAL TOOLS
@@ -76,7 +76,6 @@
     (self: super: {
       neovim = super.neovim.override {
         viAlias = true;
-        vimAlias = true;
       };
     })
   ];
