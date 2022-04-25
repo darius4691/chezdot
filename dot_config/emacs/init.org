@@ -13,14 +13,16 @@
 (setq custom-file "~/.config/emacs/custom.el")
 (load custom-file)
 #+end_src
-
+*** Native Comp
+#+begin_src emacs-lisp
+(setq package-native-compile t)
+#+end_src
 *** 设置个人信息
 设置个人信息; 其中邮箱主要用于gpg加密相关进程
 #+begin_src emacs-lisp
 (setq user-full-name "黄耀庭"
       user-mail-address "dariush4691@outlook.com")
 #+end_src
-
 *** 设置字体
 设置字体, 注意如果emacs使用守护进程的方式启动, 需要使用把字体设置加入HOOK中
 #+begin_src emacs-lisp
@@ -61,15 +63,16 @@
 
 *** 初始界面设置
 初始界面为了照顾新人引入了很多不必要的界面元素, 这些界面元素包括
-| 界面元素 | 相关参数                  | 说明                                             |
-|----------+---------------------------+--------------------------------------------------|
-| 欢迎界面 | =inhibit-startup-message= | 初始进入的问候界面; 如果关闭则会默认进入 scratch |
-| 滚动条   | =scroll-bar-mode=         | 真的有程序员会看这个么?                          |
-| 工具栏   | =tool-bar-mode=           | 提供的功能很少, 而且大部分时间遮挡视野           |
-| 工具提示 | =tooltip-mode=            | 把鼠标放在工具栏上, 一段时间后出现的提示         |
-| 页面边距 | =set-fringe-mode=         | 代码和左边框的最小距离, 建议适当增大             |
-| 菜单栏   | =menu-bar-mode=           | 前期可以保留; 后期用熟快捷键可以去除             |
-| 警告声   | =visible-bell=            | 可以使用视觉警告方式                             |
+| 界面元素 | 相关参数                    | 说明                                             |
+|----------+-----------------------------+--------------------------------------------------|
+| 欢迎界面 | =inhibit-startup-message=   | 初始进入的问候界面; 如果关闭则会默认进入 scratch |
+| 滚动条   | =scroll-bar-mode=           | 真的有程序员会看这个么?                          |
+| 工具栏   | =tool-bar-mode=             | 提供的功能很少, 而且大部分时间遮挡视野           |
+| 工具提示 | =tooltip-mode=              | 把鼠标放在工具栏上, 一段时间后出现的提示         |
+| 页面边距 | =set-fringe-mode=           | 代码和左边框的最小距离, 建议适当增大             |
+| 菜单栏   | =menu-bar-mode=             | 前期可以保留; 后期用熟快捷键可以去除             |
+| 警告声   | =visible-bell=              | 可以使用视觉警告方式                             |
+| 显示行号 | ~display-line-numbers-mode~ | 显示行号                                         |
 
 为了使可编程区域更大, 建议做出如下调整:
 #+begin_src emacs-lisp
@@ -80,6 +83,8 @@
 (tooltip-mode -1)           ; Disable tooltips
 (set-fringe-mode 10)        ; Give some breathing room, modify the spacing 
 (menu-bar-mode -1)          ; Disable the menu bar
+;; add leftside line number when in coding mode
+(add-hook 'prog-mode-hook #'display-line-numbers-mode) ; display line number in program-mode
 #+end_src
 
 *** 快捷键设置
@@ -88,38 +93,32 @@
 (global-set-key (kbd "C-; t") 'darius/toggle-proxy)
 #+end_src
 
-** 提升操作体验
-*** EVIL mode
-vim style undo not needed for emacs 28
+** 提升编辑操作体验
+*** 自动匹配括号
 #+begin_src emacs-lisp
 (electric-pair-mode)        ; toggle auto-pair-mode
-(use-package undo-fu)
+#+end_src
+
+*** VIM 模拟器
+emacs 本生利用 ~Ctrl~, ~Meta~ 键的文本移动框选操作使用体验较差; 这里使用 emacs 的 Vim 模拟器. 如果像要退出 ~evil-mode~, 则在任意状态按下 ~C-z~ 即可.
+#+begin_src emacs-lisp
 (use-package evil
+  :ensure t
   :demand t
   :bind (("<escape>" . keyboard-escape-quit))
-  :init
-  ;; allows for using cgn
-  ;; (setq evil-search-module 'evil-search)
-  (setq evil-want-keybinding nil)
-  ;; no vim insert bindings
-  (setq evil-undo-system 'undo-fu)
+  :custom
+  (evil-want-keybinding nil)
+  (evil-search-module 'evil-search)
+  (evil-undo-system 'undo-redo)
   :config
   (evil-mode 1)
   (evil-set-leader 'normal (kbd "SPC"))
-  (evil-set-leader 'normal "\\" t) ;Set localleader if last arg is non-nil 
-  )
+  (evil-set-leader 'normal "\\" t))
 #+end_src
 
-vim key bindings everywhere else
-#+begin_src emacs-lisp
-(use-package evil-collection
-  :after evil
-  :config
-  (setq evil-want-integration t)
-  (evil-collection-init))
-#+end_src
-
-the popular evil-surrond corresponding to vim
+**** Vim插件替代
+***** Vim surrond
+用于快速更改括号; 例如 ~ys[text object](~ 用来给一个文本对象加上括号; ~ds(~ 删除括号; ~cs(~ 更改括号.
 #+begin_src emacs-lisp
 (use-package evil-surround
   :ensure t
@@ -127,44 +126,55 @@ the popular evil-surrond corresponding to vim
   (global-evil-surround-mode 1))
 #+end_src
 
+**** Evil增强插件
+#+begin_src emacs-lisp
+(use-package evil-collection
+  :ensure t
+  :after evil
+  :config
+  (evil-collection-init))
+#+end_src
+
 ** 减轻大脑负担
 *** 使用主题
 #+begin_src emacs-lisp
-;;; Using A Eyecandy Theme
 (use-package gruvbox-theme
   :after evil
   :config
   (load-theme 'gruvbox))
 #+end_src
 
-modeline
+*** 状态栏
 #+begin_src emacs-lisp
 (use-package all-the-icons)
 (use-package doom-modeline
   :ensure t
   :init (doom-modeline-mode 1)
-  :custom ((doom-modeline-height 15)))
+  :custom
+  (doom-modeline-height 15)
+  (doom-modeline-modal-icon nil))
 (use-package nyan-mode
   :ensure t
   :init (nyan-mode))
 #+end_src
 
-彩虹括号
+*** 彩虹括号
+[[https://github.com/Fanael/rainbow-delimiters][rainbow-delimiters]] 用于为每一级括号染上不同的颜色, 在 LISP 类的语言中非常有用. 
 #+begin_src emacs-lisp
-;; rainbow parrent
 (use-package rainbow-delimiters
+  :ensure t
   :hook (prog-mode . rainbow-delimiters-mode))
-;; add leftside line number when in coding mode
-(add-hook 'prog-mode-hook #'display-line-numbers-mode)
 #+end_src
 
-*** which-KEY
+*** 快捷键提示
+[[https://github.com/justbur/emacs-which-key][which-key]] 用于在输入快捷键 *序列* 时, 提示当前可用的 *后续* 快捷键. 该软件包还提供了一个函数 =which-key-show-top-level= 用来直接显示当前的快捷键. 为了方便起见, 将这个函数映射为 ~C-h SPC~ 以便在特殊buffer中显示当前可用快捷键; 此外, 如果涉及的快捷键太多, 可以使用 ~C-h n~ 和 ~C-h p~ 上下翻页.
 #+begin_src emacs-lisp
 (use-package which-key
+  :ensure t
   :init (which-key-mode)
   :diminish which-key-mode
-  :config
-  (setq which-key-idle-delay 1))
+  :bind ("C-h SPC" . #'which-key-show-top-level)
+  :custom (which-key-idel-delay 1))
 #+end_src
 
 *** MINIBUFFER补全
@@ -217,25 +227,21 @@ modeline
   :init (ivy-rich-mode 1))
 #+end_src
 
-** Completion at the point
+** 自动补全
 #+begin_src emacs-lisp
-
 (use-package company
   :ensure t
-  :after lsp-mode
-  :hook (lsp-mode . company-mode)
-  :bind (:map company-active-map
-         ("<tab>" . company-complete-selection))
-        (:map lsp-mode-map
-         ("<tab>" . company-indent-or-complete-common))
+  :bind ("C-; TAB" . #'company-mode)
   :custom
   (company-minimum-prefix-length 1)
-  (company-idle-delay 0.0))
+  (company-idle-delay 0.0)
+  (evil-complete-next-func #'company-complete-common-or-cycle)
+  :config
+  (global-company-mode))
 
 (use-package company-box
   :ensure t
   :hook (company-mode . company-box-mode))
-
 #+end_src
 ** ORG-MODE
 *** 快捷键设置
@@ -283,54 +289,14 @@ modeline
 (use-package sly)
 (use-package plantuml-mode)
 (use-package lua-mode)
-(use-package racket-mode)
+(use-package geiser)
+(use-package geiser-racket)
+;;(use-package racket-mode)
 (use-package haskell-mode)
 (use-package graphviz-dot-mode :ensure t)
 #+end_src
 
-***  EXPORTER
-
-#+begin_src emacs-lisp
-;; orgmode export latex template
-(with-eval-after-load 'ox-latex
-  (setq org-latex-compiler "xelatex")
-  (setq org-latex-pdf-process '("latexmk -%latex -quiet -shell-escape -f %f"))
-  (add-to-list 'org-latex-classes
-           '("scrartcl"
-             "\\documentclass{myscrartcl}
-              [DEFAULT-PACKAGES]
-              [PACKAGES]
-              [EXTRA]"
-             ("\\section{%s}" . "\\section*{%s}")
-             ("\\subsection{%s}" . "\\subsection*{%s}")
-             ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-             ("\\paragraph{%s}" . "\\paragraph*{%s}")
-             ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
-  (add-to-list 'org-latex-classes
-             '("elegantpaper"
-	       "\\documentclass{myelegantpaper}
-		[NO-DEFAULT-PACKAGES]
-		[PACKAGES]
-		[EXTRA]"
-	       ("\\section{%s}" . "\\section*{%s}")
-               ("\\subsection{%s}" . "\\subsection*{%s}")
-               ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-               ("\\paragraph{%s}" . "\\paragraph*{%s}")
-               ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
-    (setq org-latex-default-class "elegantpaper"))
-(use-package ox-pandoc
-  :config
-  (setq org-pandoc-options-for-latex-pdf
-	'((pdf-engine . "xelatex")
-	  (listings . t)
-	  (template . eisvogel)
-	  (variable . "CJKmainfont=SourceHanSansSC-Regular")
-	  (lua-filter . "no-code-attributes.lua"))))
-(setq org-latex-listings t
-      org-latex-listings-options '(("numbers" "left")))
-#+end_src
-
-***  ROAM
+*** ROAM
 #+begin_src emacs-lisp
 ;; Here's a very basic sample for configuration of org-roam using use-package:
 (use-package org-roam
@@ -352,7 +318,7 @@ modeline
   (require 'org-roam-protocol))
 #+end_src
 
-***  Drag-and-Drop
+*** Drag-and-Drop
 #+begin_src emacs-lisp
 (use-package org-download
   :custom
@@ -364,6 +330,13 @@ modeline
 #+end_src
 
 ** LATEX
+*** AUCTex
+#+begin_src emacs-lisp
+(use-package tex
+  :ensure auctex)
+#+end_src
+
+*** CDLaTeX
 #+begin_src emacs-lisp
 ;; latex
 (use-package cdlatex
@@ -381,8 +354,6 @@ modeline
 ** 软件
 *** 输入法
 #+begin_src emacs-lisp
-;; INPUT METHOD
-
 (use-package posframe)
 
 (use-package pyim
@@ -399,7 +370,6 @@ modeline
       :coding utf-8-unix
       :dict-type pinyin-dict)))
 #+end_src
-
 *** 文件管理器
 #+begin_src emacs-lisp
 ;; 文件管理器
@@ -413,19 +383,12 @@ modeline
     "h" 'dired-single-up-directory
     "l" 'dired-single-buffer))
 
+;; keep only one dired instance
 (use-package dired-single
   :commands (dired dired-jump))
 
 (use-package all-the-icons-dired
   :hook (dired-mode . all-the-icons-dired-mode))
-
-(use-package dired-open
-  :commands (dired dired-jump)
-  :config
-  ;; Doesn't work as expected!
-  ;;(add-to-list 'dired-open-functions #'dired-open-xdg t)
-  (setq dired-open-extensions '(("png" . "feh")
-                                ("mkv" . "mpv"))))
 
 (use-package dired-hide-dotfiles
   :hook (dired-mode . dired-hide-dotfiles-mode)
@@ -433,7 +396,6 @@ modeline
   (evil-collection-define-key 'normal 'dired-mode-map
     "H" 'dired-hide-dotfiles-mode))
 #+end_src
-
 *** Feed
 #+begin_src emacs-lisp
 (use-package elfeed
@@ -503,11 +465,11 @@ modeline
 (use-package ggtags)
 (use-package call-graph
   :config
-  (evil-define-key 'normal call-graph-mode
-    "e" 'cg-widget-expand-all
-    "c" 'cg-widget-collapse-all
-    "p" 'widget-backward
-    "n" 'widget-forward
+  (evil-define-key 'normal call-graph-mode-map
+    "zR" 'cg-widget-expand-all
+    "zM" 'cg-widget-collapse-all
+    "k" 'widget-backward
+    "j" 'widget-forward
     "q" 'cg-quit
     "+" 'cg-expand
     "_" 'cg-collapse
@@ -606,10 +568,10 @@ Try these commands with =M-x=:
 #+begin_src emacs-lisp
 (use-package scihub
   :ensure t
-  :init
-  (setq scihub-download-directory "~/papers/"
-	scihub-open-after-download t
-	scihub-fetch-domain 'scihub-fetch-domains-lovescihub))
+  :custom
+  (scihub-download-direcotry "~/papers/")
+  (scihub-open-after-download t)
+  (scihub-fetch-domains 'scihub-fetch-domains-lovescihub))
 #+end_src
 
 * LATEX

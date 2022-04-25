@@ -8,7 +8,7 @@
   environment.systemPackages = with pkgs;
     [
     # text editor
-    neovim emacs tmux
+    neovim emacs28NativeComp tmux
     # required by neovim and common tools
     direnv starship
     luajit sumneko-lua-language-server
@@ -23,8 +23,8 @@
     socat htop coreutils
     # DEVEL TOOLS
     universal-ctags global cscope # tagging tools
-    gnumake cmake gcc gdb libgccjit   # compiling tools
-    sbcl racket-minimal nodejs    # some languages
+    gnumake cmake gcc gdb         # compiling tools
+    sbcl nodejs    # some languages
     ghc cabal-install haskell-language-server # haskell
     # LITERAL TOOLS
     graphviz pandoc gnuplot
