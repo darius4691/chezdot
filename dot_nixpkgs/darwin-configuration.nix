@@ -150,7 +150,10 @@
       initExtra = ''
         zstyle ':completion:*:descriptions' format '%d'
         zstyle ':fzf-tab:complete:cd:*' fzf-preview 'exa -1 --color=always $realpath'
+        zstyle ':fzf-tab:*' continuous-trigger 'tab'
+        zstyle ':fzf-tab:*' fzf-command ftb-tmux-popup
         test -f $ZDOTDIR/local.zsh  && source $ZDOTDIR/local.zsh
+        test -f $ZDOTDIR/.iterm2_shell_integration.zsh && source $ZDOTDIR/.iterm2_shell_integration.zsh
       '';
     };
     programs.fzf = {

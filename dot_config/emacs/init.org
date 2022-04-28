@@ -403,12 +403,13 @@ emacs 本生利用 ~Ctrl~, ~Meta~ 键的文本移动框选操作使用体验较�
 	 ("C-; C-; C-e" . elfeed-update))
   :config
   (setq elfeed-feeds
-	'(("https://sspai.com/feed" paywall)
-	  ("https://medium.com/feed/towards-data-science" paywall)
-	  ("https://rss.lilydjwg.me/zhihuzhuanlan/operations-research") 
-	  ("https://rsshub.app/guokr/scientific")
-	  ("https://planet.emacslife.com/atom.xml")
-	  ("http://feeds.feedburner.com/tinybuddha")))
+	'(("https://rsshub.app/sspai/matrix" tech)
+	  ("https://medium.com/feed/towards-data-science" tech paywall)
+	  ("https://rss.lilydjwg.me/zhihuzhuanlan/operations-research" tech) 
+	  ("https://rsshub.app/guokr/scientific" tech)
+	  ("https://planet.emacslife.com/atom.xml" dev)
+	  ("http://planet.lisp.org/rss20.xml" dev)
+	  ("http://feeds.feedburner.com/tinybuddha" life)))
   (setq browse-url-browser-function 'eww-browse-url))
 #+end_src
 **** bypass paywall
