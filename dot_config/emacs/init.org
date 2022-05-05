@@ -56,7 +56,6 @@
 (setq package-archives '(("melpa" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/")
 			 ("org" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/org/")
 			 ("elpa" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/gnu/")))
-(package-initialize)
 (unless package-archive-contents
  (package-refresh-contents))
 #+end_src
@@ -78,11 +77,13 @@
 #+begin_src emacs-lisp
 (setq inhibit-startup-message t
       visible-bell t)       ; do not sound the bell. Instead, use visual blink
-(scroll-bar-mode -1)        ; Disable visible scrollbar
 (tool-bar-mode -1)          ; Disable the toolbar
 (tooltip-mode -1)           ; Disable tooltips
-(set-fringe-mode 10)        ; Give some breathing room, modify the spacing 
 (menu-bar-mode -1)          ; Disable the menu bar
+(when (display-graphic-p)
+  (scroll-bar-mode -1)        ; Disable visible scrollbar
+  (set-fringe-mode 10))       ; Give some breathing room, modify the spacing 
+  
 ;; add leftside line number when in coding mode
 (add-hook 'prog-mode-hook #'display-line-numbers-mode) ; display line number in program-mode
 #+end_src
@@ -285,14 +286,14 @@ emacs 本生利用 ~Ctrl~, ~Meta~ 键的文本移动框选操作使用体验较�
    (lisp . t)
    (haskell . t)
    (emacs-lisp . t)))
-(use-package gnuplot)
-(use-package sly)
-(use-package plantuml-mode)
-(use-package lua-mode)
-(use-package geiser)
-(use-package geiser-racket)
+(use-package gnuplot :ensure t)
+(use-package sly :ensure t)
+(use-package plantuml-mode :ensure t)
+(use-package lua-mode :ensure t)
+(use-package geiser :ensure t)
+(use-package geiser-racket :ensure t)
 ;;(use-package racket-mode)
-(use-package haskell-mode)
+(use-package haskell-mode :ensure t)
 (use-package graphviz-dot-mode :ensure t)
 #+end_src
 
@@ -321,6 +322,7 @@ emacs 本生利用 ~Ctrl~, ~Meta~ 键的文本移动框选操作使用体验较�
 *** Drag-and-Drop
 #+begin_src emacs-lisp
 (use-package org-download
+  :ensure t
   :custom
   (org-download-image-dir "~/org/imgs/downloads/")
   :bind (("C-; p" . 'org-download-clipboard))
@@ -340,25 +342,29 @@ emacs 本生利用 ~Ctrl~, ~Meta~ 键的文本移动框选操作使用体验较�
 #+begin_src emacs-lisp
 ;; latex
 (use-package cdlatex
+  :ensure t
   :bind (:map cdlatex-mode-map
 	 ("C-c C-{" . nil)
 	 ("C-c C-," . cdlatex-environment))
   :hook (LaTeX-mode . cdlatex-mode))
 (use-package auctex-latexmk
+  :ensure t
   :config
   (auctex-latexmk-setup))
 (use-package evil-tex
+  :ensure t
   :hook (LaTeX-mode . evil-tex-mode))
 (add-hook 'LaTeX-mode-hook 'turn-on-auto-fill) ; 在latex模式下输入文字自动换行
 #+end_src
 ** 软件
 *** 输入法
 #+begin_src emacs-lisp
-(use-package posframe)
+(use-package posframe :ensure t)
 
 (use-package pyim
+  :ensure t
   :custom
-  (pyim-page-tooltip 'posframe)
+  (pyim-page-tooltip '(posframe popup minibuffer))
   (pyim-punctuation-translate-p '(no auto yes)) ;全角半角问题
   (pyim-punctuation-dict nil) ;全角半角问题
   (default-input-method "pyim")
@@ -385,12 +391,15 @@ emacs 本生利用 ~Ctrl~, ~Meta~ 键的文本移动框选操作使用体验较�
 
 ;; keep only one dired instance
 (use-package dired-single
+  :ensure t
   :commands (dired dired-jump))
 
 (use-package all-the-icons-dired
+  :ensure t
   :hook (dired-mode . all-the-icons-dired-mode))
 
 (use-package dired-hide-dotfiles
+  :ensure t
   :hook (dired-mode . dired-hide-dotfiles-mode)
   :config
   (evil-collection-define-key 'normal 'dired-mode-map
@@ -399,6 +408,7 @@ emacs 本生利用 ~Ctrl~, ~Meta~ 键的文本移动框选操作使用体验较�
 *** Feed
 #+begin_src emacs-lisp
 (use-package elfeed
+  :ensure t
   :bind (("C-; C-; e" . elfeed)
 	 ("C-; C-; C-e" . elfeed-update))
   :config
@@ -409,46 +419,16 @@ emacs 本生利用 ~Ctrl~, ~Meta~ 键的文本移动框选操作使用体验较�
 	  ("https://rsshub.app/guokr/scientific" tech)
 	  ("https://planet.emacslife.com/atom.xml" dev)
 	  ("http://planet.lisp.org/rss20.xml" dev)
+	  ("https://rsshub.app/proletar" life)
+	  ("https://rsshub.app/caixin/latest" news)
 	  ("http://feeds.feedburner.com/tinybuddha" life)))
   (setq browse-url-browser-function 'eww-browse-url))
 #+end_src
-**** bypass paywall
-如果需要激活, 加上给feed加上paywall标签
-#+begin_src emacs-lisp
-(add-to-list 'load-path (concat user-emacs-directory "site-packages/elfeed-paywall"))
-(use-package elfeed-paywall
-  :ensure nil
-  :config
-  (require 'elfeed-paywall))
-(defun darius/elfeed-transform-entry (entry)
-    "Transformation logic for ENTRYs."
-    (elfeed-paywall-with-tag
-    entry 'paywall
-    (lambda ()
-        (elfeed-log 'info "Processing Entry %s" (entry-deref (elfeed-entry-title entry)))
-        ;; Remove the analytics URL forwarder that is put in front of
-        ;; "The Register" articles
-	(elfeed-paywall-replace-regexp-in-link
-	   entry "go.theregister.com/feed/" "")
-
-	;; Prefix the link for use with https://12ft.io (A direct
-        ;; URL, no JS required)
-        (elfeed-paywall-add-paywall-proxy entry))
-
-        ;; Visit the entry link, bypass the paywall, and extract the
-        ;; content from the page, then replace the content in the
-        ;; entry with it
-        (elfeed-paywall-extract-from-url entry)
-
-    ;; Delete the tag after running the lambda
-    t))
-
-(add-hook 'elfeed-new-entry-hook #'darius/elfeed-transform-entry)
-#+end_src
 *** Snippet
 #+begin_src emacs-lisp
-(use-package yasnippet-snippets)
+(use-package yasnippet-snippets :ensure t)
 (use-package yasnippet
+  :ensure t
   :bind (("C-; s" . 'yas-insert-snippet))
   :config
   (yas-global-mode 1))
@@ -456,6 +436,7 @@ emacs 本生利用 ~Ctrl~, ~Meta~ 键的文本移动框选操作使用体验较�
 *** 网易云音乐
 #+begin_src emacs-lisp
 (use-package netease-cloud-music
+  :ensure t
   :bind (("C-; C-; m" .  'netease-cloud-music-pause-or-continue)
 	 ("C-; C-; n" .  'netease-cloud-music-play-next-song)
 	 ("C-; C-; p" .  'netease-cloud-music-play-previous-song)
@@ -463,8 +444,9 @@ emacs 本生利用 ~Ctrl~, ~Meta~ 键的文本移动框选操作使用体验较�
 #+end_src
 ** 软件试验场
 #+begin_src emacs-lisp
-(use-package ggtags)
+(use-package ggtags :ensure t)
 (use-package call-graph
+  :ensure t
   :config
   (evil-define-key 'normal call-graph-mode-map
     "zR" 'cg-widget-expand-all

@@ -32,7 +32,6 @@
     #SOFTWARES
     ffmpeg
     imagemagick
-    youtube-dl
     libcaca #image to ascii
     aria2 # download manager
     w3m
@@ -130,6 +129,7 @@
         GOPATH = "\${HOME}/.local/share/go";
         MANPAGER = "sh -c 'col -bx | ${pkgs.bat}/bin/bat -l man -p'";
         FONTCONFIG_PATH = "/opt/X11/lib/X11/fontconfig";
+        PATH = "\${PATH}:\${HOME}/.local/bin";
       };
       shellAliases = {
         ll = "${pkgs.exa}/bin/exa -al";
