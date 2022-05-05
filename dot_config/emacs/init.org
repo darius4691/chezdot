@@ -156,6 +156,7 @@ emacs 本生利用 ~Ctrl~, ~Meta~ 键的文本移动框选操作使用体验较�
   (doom-modeline-modal-icon nil))
 (use-package nyan-mode
   :ensure t
+  :if window-system
   :init (nyan-mode))
 #+end_src
 
