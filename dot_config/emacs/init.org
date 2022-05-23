@@ -192,6 +192,7 @@ emacs 本生利用 ~Ctrl~, ~Meta~ 键的文本移动框选操作使用体验较�
 (use-package ivy
   :diminish
   :after evil
+  :ensure t
   :bind (:map ivy-minibuffer-map
          ("TAB" . ivy-alt-done)	
          ("C-l" . ivy-alt-done)
@@ -207,6 +208,7 @@ emacs 本生利用 ~Ctrl~, ~Meta~ 键的文本移动框选操作使用体验较�
 
 (use-package counsel
   :after (evil ivy)
+  :ensure t
   :bind (("M-x" . counsel-M-x)
          ("C-s" . swiper)
          ("C-x b" . counsel-ibuffer)
@@ -256,10 +258,11 @@ emacs 本生利用 ~Ctrl~, ~Meta~ 键的文本移动框选操作使用体验较�
 #+end_src
 *** 全局设置
 #+begin_src emacs-lisp
-(setq org-directory "~/org"
-      org-agenda-files '("~/org/agenda.org" "~/org/notes.org")
-      org-archive-location "~/org/archive.org::* From %s"
-      org-default-notes-file "~/org/notes.org"
+(setq org-directory "~/org")
+(setq org-agenda-files '((concat (file-name-as-directory org-directory) "agenda.org")
+			 (concat (file-name-as-directory org-directory) "notes.org"))
+      org-archive-location (concat (file-name-as-directory org-directory) "archive.org::* From %s")
+      org-default-notes-file (concat (file-name-as-directory org-directory) "notes.org")
       org-qgenda-start-with-log-mode t
       org-log-done 'time
       org-log-into-drawer t
@@ -305,7 +308,7 @@ emacs 本生利用 ~Ctrl~, ~Meta~ 键的文本移动框选操作使用体验较�
 (use-package org-roam
   :ensure t
   :custom
-  (org-roam-directory (file-truename "~/org-roam"))
+  (org-roam-directory (file-truename (concat (file-name-as-directory org-directory) "roam"))
   :bind (("C-; l" . org-roam-buffer-toggle)
          ("C-; f" . org-roam-node-find)
          ("C-; g" . org-roam-graph)
@@ -349,10 +352,6 @@ emacs 本生利用 ~Ctrl~, ~Meta~ 键的文本移动框选操作使用体验较�
 	 ("C-c C-{" . nil)
 	 ("C-c C-," . cdlatex-environment))
   :hook (LaTeX-mode . cdlatex-mode))
-(use-package auctex-latexmk
-  :ensure t
-  :config
-  (auctex-latexmk-setup))
 (use-package evil-tex
   :ensure t
   :hook (LaTeX-mode . evil-tex-mode))

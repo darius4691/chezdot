@@ -25,7 +25,7 @@
     universal-ctags global cscope # tagging tools
     gnumake cmake gcc gdb         # compiling tools
     sbcl nodejs    # some languages
-    ghc cabal-install haskell-language-server # haskell
+    rustc cargo libiconv# rustlang
     # LITERAL TOOLS
     graphviz pandoc gnuplot
     texlive.combined.scheme-full
