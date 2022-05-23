@@ -308,7 +308,7 @@ emacs 本生利用 ~Ctrl~, ~Meta~ 键的文本移动框选操作使用体验较�
 (use-package org-roam
   :ensure t
   :custom
-  (org-roam-directory (file-truename (concat (file-name-as-directory org-directory) "roam"))
+  (org-roam-directory (file-truename (concat (file-name-as-directory org-directory) "roam")))
   :bind (("C-; l" . org-roam-buffer-toggle)
          ("C-; f" . org-roam-node-find)
          ("C-; g" . org-roam-graph)
