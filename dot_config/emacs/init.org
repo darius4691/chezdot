@@ -90,8 +90,8 @@
 
 *** 快捷键设置
 #+begin_src emacs-lisp
-(global-set-key (kbd "C-; c") 'calendar)
-(global-set-key (kbd "C-; t") 'darius/toggle-proxy)
+(global-set-key (kbd "C-c C") 'calendar)
+(global-set-key (kbd "C-c T") 'darius/toggle-proxy)
 #+end_src
 
 ** 提升编辑操作体验
@@ -140,6 +140,7 @@ emacs 本生利用 ~Ctrl~, ~Meta~ 键的文本移动框选操作使用体验较�
 *** 使用主题
 #+begin_src emacs-lisp
 (use-package gruvbox-theme
+  :ensure t
   :after evil
   :config
   (load-theme 'gruvbox))
@@ -216,7 +217,7 @@ emacs 本生利用 ~Ctrl~, ~Meta~ 键的文本移动框选操作使用体验较�
 	 ("C-h f" . counsel-describe-function)
 	 ("C-h v" . counsel-describe-variable)
 	 ("C-h o" . counsel-describe-symbol)
-	 ("C-; ?". counsel-rg)
+	 ("C-c f". counsel-rg)
          :map minibuffer-local-map
          ("C-r" . 'counsel-minibuffer-history)
 	 :map counsel-find-file-map
@@ -236,7 +237,7 @@ emacs 本生利用 ~Ctrl~, ~Meta~ 键的文本移动框选操作使用体验较�
 #+begin_src emacs-lisp
 (use-package company
   :ensure t
-  :bind ("C-; TAB" . #'company-mode)
+  :bind ("C-c C" . #'company-mode)
   :custom
   (company-minimum-prefix-length 1)
   (company-idle-delay 0.0)
@@ -249,28 +250,37 @@ emacs 本生利用 ~Ctrl~, ~Meta~ 键的文本移动框选操作使用体验较�
   :hook (company-mode . company-box-mode))
 #+end_src
 ** ORG-MODE
-*** 快捷键设置
+*** 基础设置
 #+begin_src emacs-lisp
-(global-set-key (kbd "C-c l") #'org-store-link)
-(global-set-key (kbd "C-c a") #'org-agenda)
-(global-set-key (kbd "C-c c") #'org-capture)
-(add-hook 'org-mode-hook #'org-indent-mode) ; add virtual indentation
+(use-package org
+  :mode (("\\.org$" . org-mode))
+  :ensure org-plus-contrib
+  :custom
+  (org-directory (file-name-as-directory (file-truename "~/org")))
+  (org-agenda-files '((concat org-directory "agenda.org")
+		      (concat org-directory "notes.org")))
+  (org-archive-location (concat org-directory "archive.org::* From %s"))
+  (org-default-notes-file (concat org-directory "notes.org"))
+  (org-agenda-start-with-log-mode t)
+  (org-log-done 'time)
+  (org-log-into-drawer t)
+  (org-edit-src-content-indentation 0)
+  (org-confirm-babel-evaluate nil)
+  (org-babel-lisp-eval-fn #'sly-eval)
+  (org-highlight-latex-and-related '(native script entities))
+  :bind (("C-c l" . org-store-link)
+	 ("C-c a" . org-agenda)
+	 ("C-c c" . org-capture)
+	 :map org-mode-map
+	 ("C-c C-," . nil)
+	 ("C-c m" . org-insert-structure-template))
+  :hook (org-mode . org-indent-mode))
 #+end_src
-*** 全局设置
+*** 字体设置
 #+begin_src emacs-lisp
-(setq org-directory "~/org")
-(setq org-agenda-files '((concat (file-name-as-directory org-directory) "agenda.org")
-			 (concat (file-name-as-directory org-directory) "notes.org"))
-      org-archive-location (concat (file-name-as-directory org-directory) "archive.org::* From %s")
-      org-default-notes-file (concat (file-name-as-directory org-directory) "notes.org")
-      org-qgenda-start-with-log-mode t
-      org-log-done 'time
-      org-log-into-drawer t
-      org-edit-src-content-indentation 0
-      org-confirm-babel-evaluate nil
-      org-babel-lisp-eval-fn #'sly-eval
-      org-highlight-latex-and-related '(native script entities))
 (use-package mixed-pitch
+  :ensure t
+  :if window-system
   :hook (org-mode . mixed-pitch-mode))
 #+end_src
 
@@ -308,14 +318,14 @@ emacs 本生利用 ~Ctrl~, ~Meta~ 键的文本移动框选操作使用体验较�
 (use-package org-roam
   :ensure t
   :custom
-  (org-roam-directory (file-truename (concat (file-name-as-directory org-directory) "roam")))
-  :bind (("C-; l" . org-roam-buffer-toggle)
-         ("C-; f" . org-roam-node-find)
-         ("C-; g" . org-roam-graph)
-         ("C-; i" . org-roam-node-insert)
-         ("C-; c" . org-roam-capture)
+  (org-roam-directory (concat org-directory "roam"))
+  :bind (("C-c n l" . org-roam-buffer-toggle)
+         ("C-c n f" . org-roam-node-find)
+         ("C-c n g" . org-roam-graph)
+         ("C-c n i" . org-roam-node-insert)
+         ("C-c n c" . org-roam-capture)
          ;; dailies
-         ("C-; j" . org-roam-dailies-capture-today))
+         ("C-c n j" . org-roam-dailies-capture-today))
   :config
   ;; If you're using a vertical completion framework, you might want a more informative completion interface
   (setq org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
@@ -328,9 +338,10 @@ emacs 本生利用 ~Ctrl~, ~Meta~ 键的文本移动框选操作使用体验较�
 #+begin_src emacs-lisp
 (use-package org-download
   :ensure t
+  :after org
   :custom
-  (org-download-image-dir "~/org/imgs/downloads/")
-  :bind (("C-; p" . 'org-download-clipboard))
+  (org-download-image-dir (concat org-directory "imgs/download"))
+  :bind (("C-c p" . 'org-download-clipboard))
   :hook (dired-mode . org-download-enable)
   :init
   (require 'org-download))
@@ -350,7 +361,7 @@ emacs 本生利用 ~Ctrl~, ~Meta~ 键的文本移动框选操作使用体验较�
   :ensure t
   :bind (:map cdlatex-mode-map
 	 ("C-c C-{" . nil)
-	 ("C-c C-," . cdlatex-environment))
+	 ("C-c m" . cdlatex-environment))
   :hook (LaTeX-mode . cdlatex-mode))
 (use-package evil-tex
   :ensure t
@@ -412,8 +423,7 @@ emacs 本生利用 ~Ctrl~, ~Meta~ 键的文本移动框选操作使用体验较�
 #+begin_src emacs-lisp
 (use-package elfeed
   :ensure t
-  :bind (("C-; C-; e" . elfeed)
-	 ("C-; C-; C-e" . elfeed-update))
+  :bind ("C-c E" . elfeed)
   :config
   (setq elfeed-feeds
 	'(("https://rsshub.app/sspai/matrix" tech)
@@ -432,18 +442,9 @@ emacs 本生利用 ~Ctrl~, ~Meta~ 键的文本移动框选操作使用体验较�
 (use-package yasnippet-snippets :ensure t)
 (use-package yasnippet
   :ensure t
-  :bind (("C-; s" . 'yas-insert-snippet))
+  :bind (("C-c s" . 'yas-insert-snippet))
   :config
   (yas-global-mode 1))
-#+end_src
-*** 网易云音乐
-#+begin_src emacs-lisp
-(use-package netease-cloud-music
-  :ensure t
-  :bind (("C-; C-; m" .  'netease-cloud-music-pause-or-continue)
-	 ("C-; C-; n" .  'netease-cloud-music-play-next-song)
-	 ("C-; C-; p" .  'netease-cloud-music-play-previous-song)
-	 ("C-; C-; f" .  'netease-cloud-music-search-song)))
 #+end_src
 ** 软件试验场
 #+begin_src emacs-lisp
@@ -467,9 +468,6 @@ emacs 本生利用 ~Ctrl~, ~Meta~ 键的文本移动框选操作使用体验较�
     "t" 'cg-toggle-show-func-args
     "f" 'cg-toggle-invalid-reference
     (kbd "<RET>") 'cg-goto-file-at-point))
-(use-package pdf-tools
-  :ensure t
-  :if window-system)
 #+end_src
 *** 快捷键列表
 | 按键  | 函数                          |
@@ -477,19 +475,19 @@ emacs 本生利用 ~Ctrl~, ~Meta~ 键的文本移动框选操作使用体验较�
 | C-c l | org-store-link                |
 | C-c a | org-agenda                    |
 | C-c c | org-acpture                   |
-| C-; l | org-roam-buffer-toggle        |
-| C-; f | org-roam-node-find            |
-| C-; g | org-roam-node-insert          |
-| C-; c | org-roam-capture              |
-| C-; j | org-roam-dailies-capture-tody |
-| C-; p | org-download-clipboard        |
+| C-c n l | org-roam-buffer-toggle        |
+| C-c n f | org-roam-node-find            |
+| C-c n g | org-roam-node-insert          |
+| C-c n c | org-roam-capture              |
+| C-c n j | org-roam-dailies-capture-tody |
+| C-c n p | org-download-clipboard        |
 
 ** 开发
 *** devdocs
 #+begin_src emacs-lisp
 (use-package devdocs
   :ensure t
-  :bind ("C-; K" . 'devdocs-lookup))
+  :bind ("C-c K" . 'devdocs-lookup))
 #+end_src
 ** 语言服务器支持
 *** LSP
@@ -503,7 +501,7 @@ AKA =language server protocal=
   :commands (lsp lsp-deferred)
   :hook (lsp-mode . darius/lsp-mode-setup)
   :init
-  (setq lsp-keymap-prefix "C-; C-l")  ;; Or 'C-l', 's-l'
+  (setq lsp-keymap-prefix "C-c g")  ;; Or 'C-l', 's-l'
   :config
   (lsp-enable-which-key-integration t))
 #+end_src
